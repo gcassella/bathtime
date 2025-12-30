@@ -1,0 +1,20 @@
+[
+  {
+    "op": "add",
+    "path": "/client/behaviors/13",
+    "value": {
+      "code": "bathtime.stinky"
+    },
+    "file": "game:entities/humanoid/player.json",
+    "side": "Server"
+  },
+  {
+    "op": "add",
+    "path": "/server/behaviors/15",
+    "value": {
+      "code": "bathtime.stinky"
+    },
+    "file": "game:entities/humanoid/player.json",
+    "side": "Server"
+  }
+]

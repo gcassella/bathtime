@@ -1,0 +1,30 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Dotnet Watch (Creative)",
+            "type": "coreclr",
+            "request": "launch",
+            "program": "dotnet",
+            "args": [
+                "watch",
+                "--verbose",
+                "--project",
+                "Launcher/Launcher.csproj",
+                "--addModPath",
+                "${workspaceFolder}/BathTime/bin/Debug/Mods",
+                "-pcreativebuilding",
+                "-oTestWorld",
+            ],
+            "console": "internalConsole",
+            "internalConsoleOptions": "openOnSessionStart",
+            "justMyCode": false
+        },
+        {
+            "name": ".NET Core Attach",
+            "type": "coreclr",
+            "request": "attach",
+            "processId": "${command:pickProcess}",
+        }
+    ]
+}

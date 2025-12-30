@@ -1,0 +1,14 @@
+{
+    "$schema": "https://moddbcdn.vintagestory.at/schema/modinfo.latest.json",
+    "type": "Code",
+    "modid": "bathtime",
+    "name": "BathTime",
+    "authors": [
+        "Shantari"
+    ],
+    "description": "Time to take a bath.",
+    "version": "1.0.0",
+    "dependencies": {
+        "game": "1.21.0"
+    }
+}
