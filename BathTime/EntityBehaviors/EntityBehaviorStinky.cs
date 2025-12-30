@@ -37,10 +37,7 @@ internal class EntityBehaviorStinky : EntityBehavior
         }
     }
 
-    public EntityBehaviorStinky(Entity entity) : base(entity)
-    {
-    }
-
+    // Value in [0, 1] indicating how stinky the entity is.
     public double Stinkiness
     {
         get
@@ -55,11 +52,24 @@ internal class EntityBehaviorStinky : EntityBehavior
         }
     }
 
-    private void IncrementStinkiness(double delta)
+    //
+
+    // Update entity Stinkiness. Stinkiness increases as a quadratic tween w.r.t. in-game time. That is, Stinkiness S
+    // as a function of 'normalized time' x is S(x)=x(2-x) where S, x in [0, 1]. The normalized time can be inferred
+    // from current Stinkiness as x_c = 1 - sqrt(1 - S), allowing the Stinkiness to be updated to S(x_c + d) where
+    // d = (TotalDays - lastUpdatedDays) / maxStinkinessDays.
+    private void UpdateStinkiness(float dt)
     {
-        double normalizedStartTime = 1 - Math.Sqrt(1 - Stinkiness);
-        double normalizedEndTime = Math.Clamp(normalizedStartTime + rateMultiplier * delta, 0, 1);
-        Stinkiness = normalizedEndTime * (2 - normalizedEndTime);
+        // Server handles updating attributes.
+        if (entity.Api.Side == EnumAppSide.Server)
+        {
+            double delta = (entity.World.Calendar.TotalDays - lastUpdatedDays) / maxStinkinessDays;
+            double normalizedStartTime = 1 - Math.Sqrt(1 - Stinkiness);
+            // For large deltas, normalizedEndTime can exceed 1 and must be clamped.
+            double normalizedEndTime = Math.Clamp(normalizedStartTime + rateMultiplier * delta, 0, 1);
+            Stinkiness = normalizedEndTime * (2 - normalizedEndTime);
+            lastUpdatedDays = entity.World.Calendar.TotalDays;
+        }
     }
 
     public override string PropertyName()
@@ -79,18 +89,7 @@ internal class EntityBehaviorStinky : EntityBehavior
             lastUpdatedDays = entity.World.Calendar.TotalDays;
         }
 
-        listenerId = entity.World.RegisterGameTickListener(SlowTick, listenerInterval);
-    }
-
-    private void SlowTick(float dt)
-    {
-        // Server handles updating attributes.
-        if (entity.Api.Side == EnumAppSide.Server)
-        {
-            double delta = (entity.World.Calendar.TotalDays - lastUpdatedDays) / maxStinkinessDays;
-            IncrementStinkiness(delta);
-            lastUpdatedDays = entity.World.Calendar.TotalDays;
-        }
+        listenerId = entity.World.RegisterGameTickListener(UpdateStinkiness, listenerInterval);
     }
 
     // Remove game tick listener when entity despawns.
@@ -98,5 +97,9 @@ internal class EntityBehaviorStinky : EntityBehavior
     {
         base.OnEntityDespawn(despawn);
         entity.World.UnregisterGameTickListener(listenerId);
+    }
+
+    public EntityBehaviorStinky(Entity entity) : base(entity)
+    {
     }
 }
