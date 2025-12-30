@@ -11,12 +11,6 @@ namespace BathTime;
 
 internal class EntityBehaviorStinky : EntityBehavior
 {
-    // The listener ID for the gameTickListener.
-    private long listenerId;
-
-    // The interval for the tick listener to update attributes in ms.
-    private int listenerInterval = 3000;
-
     // Rate multiplier for increment of stinkiness. Linearly increases rate at which stinkiness accumulates.
     public double rateMultiplier = 1.0;
 
@@ -58,7 +52,7 @@ internal class EntityBehaviorStinky : EntityBehavior
     // as a function of 'normalized time' x is S(x)=x(2-x) where S, x in [0, 1]. The normalized time can be inferred
     // from current Stinkiness as x_c = 1 - sqrt(1 - S), allowing the Stinkiness to be updated to S(x_c + d) where
     // d = (TotalDays - lastUpdatedDays) / maxStinkinessDays.
-    private void UpdateStinkiness(float dt)
+    public override void OnGameTick(float dt)
     {
         // Server handles updating attributes.
         if (entity.Api.Side == EnumAppSide.Server)
@@ -88,15 +82,6 @@ internal class EntityBehaviorStinky : EntityBehavior
             Stinkiness = 0;
             lastUpdatedDays = entity.World.Calendar.TotalDays;
         }
-
-        listenerId = entity.World.RegisterGameTickListener(UpdateStinkiness, listenerInterval);
-    }
-
-    // Remove game tick listener when entity despawns.
-    public override void OnEntityDespawn(EntityDespawnData despawn)
-    {
-        base.OnEntityDespawn(despawn);
-        entity.World.UnregisterGameTickListener(listenerId);
     }
 
     public EntityBehaviorStinky(Entity entity) : base(entity)
