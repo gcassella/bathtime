@@ -10,6 +10,8 @@ namespace BathTime;
 public class BathTimeModSystem : ModSystem
 {
 
+    StinkParticleSystem stinkParticleSystem;
+
     // Called on server and client
     // Useful for registering block/entity classes on both sides
     public override void Start(ICoreAPI api)
@@ -29,8 +31,8 @@ public class BathTimeModSystem : ModSystem
             .HandleWith(args =>
             {
                 EntityBehaviorStinky behavior = args.Caller.Player.Entity.GetBehavior<EntityBehaviorStinky>();
-                    behavior.Stinkiness = 0;
-                    return TextCommandResult.Success("Your stinkiness has been reset");
+                behavior.Stinkiness = 0;
+                return TextCommandResult.Success("Your stinkiness has been reset");
             });
     }
 
@@ -44,8 +46,11 @@ public class BathTimeModSystem : ModSystem
             .HandleWith(args =>
             {
                 EntityBehaviorStinky behavior = args.Caller.Player.Entity.GetBehavior<EntityBehaviorStinky>();
-                    double stinkiness = behavior.Stinkiness;
-                    return TextCommandResult.Success("Your stinkiness is " + stinkiness);
+                double stinkiness = behavior.Stinkiness;
+                return TextCommandResult.Success("Your stinkiness is " + stinkiness);
             });
+
+        stinkParticleSystem = new StinkParticleSystem(capi);
+        stinkParticleSystem.Initialize();
     }
 }
