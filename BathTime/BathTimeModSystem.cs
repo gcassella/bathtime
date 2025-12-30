@@ -5,6 +5,8 @@ using Vintagestory.API.Common;
 
 namespace BathTime;
 
+#nullable disable
+
 public class BathTimeModSystem : ModSystem
 {
 
@@ -17,47 +19,33 @@ public class BathTimeModSystem : ModSystem
         api.RegisterEntityBehaviorClass(Constants.MOD_ID + ".stinky", typeof(EntityBehaviorStinky));
     }
 
-    public override void StartServerSide(ICoreServerAPI api)
+    public override void StartServerSide(ICoreServerAPI sapi)
     {
         Mod.Logger.Notification("Hello from template mod server side: " + Lang.Get("bathtime:hello"));
 
-        api.ChatCommands.Create("reset_stinky")
+        sapi.ChatCommands.Create("reset_stinky")
             .RequiresPlayer()
             .RequiresPrivilege(Privilege.chat)
             .HandleWith(args =>
             {
-                EntityBehaviorStinky? behavior = args.Caller.Player.Entity.GetBehavior<EntityBehaviorStinky>();
-                if (behavior is null)
-                {
-                    return TextCommandResult.Error("Stinky behavior is null.");
-                }
-                else
-                {
+                EntityBehaviorStinky behavior = args.Caller.Player.Entity.GetBehavior<EntityBehaviorStinky>();
                     behavior.Stinkiness = 0;
                     return TextCommandResult.Success("Your stinkiness has been reset");
-                }
             });
     }
 
-    public override void StartClientSide(ICoreClientAPI api)
+    public override void StartClientSide(ICoreClientAPI capi)
     {
         Mod.Logger.Notification("Hello from template mod client side: " + Lang.Get("bathtime:hello"));
 
-        api.ChatCommands.Create("stinky")
+        capi.ChatCommands.Create("stinky")
             .RequiresPlayer()
             .RequiresPrivilege(Privilege.chat)
             .HandleWith(args =>
             {
-                EntityBehaviorStinky? behavior = args.Caller.Player.Entity.GetBehavior<EntityBehaviorStinky>();
-                if (behavior is null)
-                {
-                    return TextCommandResult.Error("Stinky behavior is null.");
-                }
-                else
-                {
+                EntityBehaviorStinky behavior = args.Caller.Player.Entity.GetBehavior<EntityBehaviorStinky>();
                     double stinkiness = behavior.Stinkiness;
                     return TextCommandResult.Success("Your stinkiness is " + stinkiness);
-                }
             });
     }
 }
