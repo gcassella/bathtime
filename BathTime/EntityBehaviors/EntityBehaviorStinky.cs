@@ -57,18 +57,9 @@ internal class EntityBehaviorStinky : EntityBehavior
 
     private void IncrementStinkiness(double delta)
     {
-        if (delta < 0.05)
-        {
-            Stinkiness += 2 * rateMultiplier * delta * Math.Sqrt(1 - Stinkiness);
-        }
-        else
-        {
-            // The finite difference approximation fails for large time jumps
-            // and we have to integrate the change in Stinkiness explicitly.
-            double normalizedStartTime = 1 - Math.Sqrt(1 - Stinkiness);
-            double normalizedEndTime = Math.Clamp(normalizedStartTime + delta, 0, 1);
-            Stinkiness = normalizedEndTime * (2 - normalizedEndTime);
-        }
+        double normalizedStartTime = 1 - Math.Sqrt(1 - Stinkiness);
+        double normalizedEndTime = Math.Clamp(normalizedStartTime + rateMultiplier * delta, 0, 1);
+        Stinkiness = normalizedEndTime * (2 - normalizedEndTime);
     }
 
     public override string PropertyName()
