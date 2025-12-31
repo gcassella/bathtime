@@ -7,13 +7,13 @@ using Vintagestory.API.MathTools;
 public class StinkParticleSystem
 {
     readonly ICoreClientAPI capi;
-    private static int[] hsvaBaseColor = ColorUtil.RgbToHsvInts(108, 212, 60);
+
     private static AdvancedParticleProperties stinkParticles = new AdvancedParticleProperties()
     {
         HsvaColor = [
-            NatFloat.createUniform(hsvaBaseColor[0], 16f),
-            NatFloat.createUniform(hsvaBaseColor[1], 16f),
-            NatFloat.createUniform(hsvaBaseColor[2], 16f),
+            NatFloat.createUniform(Constants.hsvaStinkBaseColor[0], 16f),
+            NatFloat.createUniform(Constants.hsvaStinkBaseColor[1], 16f),
+            NatFloat.createUniform(Constants.hsvaStinkBaseColor[2], 16f),
             NatFloat.createUniform(128f, 64f),
         ],
         GravityEffect = NatFloat.createUniform(-0.02f, 0.0f),

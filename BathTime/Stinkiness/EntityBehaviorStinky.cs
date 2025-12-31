@@ -101,7 +101,6 @@ internal class EntityBehaviorStinky : EntityBehavior
             // For large deltas, normalizedEndTime can exceed 1 and must be clamped.
             double normalizedEndTime = Math.Clamp(normalizedStartTime + rateMultiplier * delta, 0, 1);
             Stinkiness = normalizedEndTime * (2 - normalizedEndTime);
-            entity.Api.Logger.Chat("Rate Multiplier: " + rateMultiplier + " EndTime: " + normalizedEndTime + " Stinkiness: " + (normalizedEndTime * (2 - normalizedEndTime)));
             lastUpdatedDays = entity.World.Calendar.TotalDays;
         }
     }
