@@ -73,12 +73,13 @@ public class StinkParticleSystem
             {
                 continue;
             }
-            ;
 
             // Spawn particles on stinky entities.
             EntityPos entityPos = entity.Pos;
             stinkParticles.basePos = entityPos.XYZ + stinkPosVerticalOffset;
-            stinkParticles.Quantity = NatFloat.createGauss(3 * (float)entityStinkiness, 1.0f);
+            var normalizedStinkinessAboveThreshold = (entityStinkiness - 0.25) / 0.75;
+            var quantityMean = normalizedStinkinessAboveThreshold * normalizedStinkinessAboveThreshold;
+            stinkParticles.Quantity = NatFloat.createGauss((float)quantityMean, 0.25f);
             manager.Spawn(stinkParticles);
         }
 
