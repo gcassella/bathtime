@@ -13,18 +13,20 @@ internal class EntityBehaviorStinky : EntityBehavior
     /// </summary>
     private double rateMultiplier = 1.0;
 
-    private IStinkyRateModifier[] rateMultiplierModifiers;
+    /// <summary>
+    /// Array of rate modifiers, sorted by modifier priority (ascending). Applied in order.
+    /// </summary>
+    private IStinkyRateModifier[] rateMultiplierModifiers = [];
 
-    public void RegisterRateMultiplierModifier(Type rateMultiplierModifier)
+    /// <summary>
+    /// Register a new modifier that will apply to this instance of the behavior.
+    /// </summary>
+    /// <param name="newModifier"></param>
+    public void RegisterRateMultiplierModifier(IStinkyRateModifier newModifier)
     {
-        dynamic? newModifier = Activator.CreateInstance(rateMultiplierModifier);
-        if (newModifier is null)
-        {
-            return;
-        }
         rateMultiplierModifiers = rateMultiplierModifiers
         .Append(
-            (IStinkyRateModifier)newModifier
+            newModifier
         ).OrderBy(
             mod =>
             {
@@ -85,11 +87,12 @@ internal class EntityBehaviorStinky : EntityBehavior
         // Server handles updating attributes.
         if (entity.Api.Side == EnumAppSide.Server)
         {
+            rateMultiplier = 1.0;
             foreach (var modifier in rateMultiplierModifiers)
             {
-                if (modifier.StinkyRateModifierIsActive(entity))
+                if (modifier.StinkyRateModifierIsActive())
                 {
-                    rateMultiplier = modifier.StinkyModifyRate(entity, rateMultiplier);
+                    rateMultiplier = modifier.StinkyModifyRate(rateMultiplier);
                 }
             }
 
@@ -98,7 +101,7 @@ internal class EntityBehaviorStinky : EntityBehavior
             // For large deltas, normalizedEndTime can exceed 1 and must be clamped.
             double normalizedEndTime = Math.Clamp(normalizedStartTime + rateMultiplier * delta, 0, 1);
             Stinkiness = normalizedEndTime * (2 - normalizedEndTime);
-            entity.Api.Logger.Notification("Rate Multiplier: " + rateMultiplier + " EndTime: " + normalizedEndTime + " Stinkiness: " + (normalizedEndTime * (2 - normalizedEndTime)));
+            entity.Api.Logger.Chat("Rate Multiplier: " + rateMultiplier + " EndTime: " + normalizedEndTime + " Stinkiness: " + (normalizedEndTime * (2 - normalizedEndTime)));
             lastUpdatedDays = entity.World.Calendar.TotalDays;
         }
     }
@@ -118,7 +121,7 @@ internal class EntityBehaviorStinky : EntityBehavior
         ITreeAttribute treeAttribute = entity.WatchedAttributes.GetTreeAttribute(Constants.MOD_ID);
         if (treeAttribute == null)
         {
-            entity.WatchedAttributes.SetAttribute(Constants.MOD_ID, treeAttribute = new TreeAttribute());
+            entity.WatchedAttributes.SetAttribute(Constants.MOD_ID, new TreeAttribute());
             Stinkiness = 0;
             lastUpdatedDays = entity.World.Calendar.TotalDays;
         }
@@ -126,7 +129,6 @@ internal class EntityBehaviorStinky : EntityBehavior
 
     public EntityBehaviorStinky(Entity entity) : base(entity)
     {
-        rateMultiplierModifiers = [];
-        RegisterRateMultiplierModifier(typeof(StinkyRateMultiplierModifierWater));
+        RegisterRateMultiplierModifier(new StinkyRateModifierBath(entity));
     }
 }

@@ -9,14 +9,14 @@ public interface IStinkyRateModifier
     /// </summary>
     /// <param name="entity"></param>
     /// <returns></returns>
-    public bool StinkyRateModifierIsActive(Entity entity);
+    public bool StinkyRateModifierIsActive();
 
     /// <summary>
     /// Update rateMultiplier.
     /// </summary>
     /// <param name="rateMultplier"></param>
     /// <returns></returns>
-    public double StinkyModifyRate(Entity entity, double rateMultplier);
+    public double StinkyModifyRate(double rateMultplier);
 
     /// <summary>
     /// Priority of this rate multiplier. Higher priority multipliers are applied LAST, allowing them to potentially
