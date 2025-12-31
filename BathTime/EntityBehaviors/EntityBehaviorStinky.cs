@@ -1,23 +1,26 @@
 using System;
-using Vintagestory;
 using Vintagestory.API.Common;
 using Vintagestory.API.Common.Entities;
 using Vintagestory.API.Datastructures;
-using Vintagestory.Common;
-using Vintagestory.GameContent;
-using Vintagestory.Server;
+using Vintagestory.API.MathTools;
 
 namespace BathTime;
 
 internal class EntityBehaviorStinky : EntityBehavior
 {
-    // Rate multiplier for increment of stinkiness. Linearly increases rate at which stinkiness accumulates.
+    /// <summary>
+    /// Rate multiplier for increment of stinkiness. Linearly increases rate at which stinkiness accumulates.
+    /// </summary>
     public double rateMultiplier = 1.0;
 
-    // Number of days required to reach max stinkiness when rateMultiplier is 1.0.
+    /// <summary>
+    /// Number of days required to reach max stinkiness when rateMultiplier is 1.0.
+    /// </summary>
     private double maxStinkinessDays = 2.0;
 
-    // Days from calendar beginning when attributes were last updated.
+    /// <summary>
+    /// Days from calendar beginning when attributes were last updated.
+    /// </summary>
     private double lastUpdatedDays
     {
         get
@@ -31,7 +34,9 @@ internal class EntityBehaviorStinky : EntityBehavior
         }
     }
 
-    // Value in [0, 1] indicating how stinky the entity is.
+    /// <summary>
+    /// Value in [0, 1] indicating how stinky the entity is.
+    /// </summary>
     public double Stinkiness
     {
         get
@@ -48,10 +53,13 @@ internal class EntityBehaviorStinky : EntityBehavior
 
     //
 
-    // Update entity Stinkiness. Stinkiness increases as a quadratic tween w.r.t. in-game time. That is, Stinkiness S
-    // as a function of 'normalized time' x is S(x)=x(2-x) where S, x in [0, 1]. The normalized time can be inferred
-    // from current Stinkiness as x_c = 1 - sqrt(1 - S), allowing the Stinkiness to be updated to S(x_c + d) where
-    // d = (TotalDays - lastUpdatedDays) / maxStinkinessDays.
+    /// <summary>
+    /// Update entity Stinkiness. Stinkiness increases as a quadratic tween w.r.t. in-game time. That is, Stinkiness S
+    /// as a function of 'normalized time' x is S(x)=x(2-x) where S, x in [0, 1]. The normalized time can be inferred
+    /// from current Stinkiness as x_c = 1 - sqrt(1 - S), allowing the Stinkiness to be updated to S(x_c + d) where
+    /// d = (TotalDays - lastUpdatedDays) / maxStinkinessDays.
+    /// </summary>
+    /// <param name="dt">Unused.</param>
     public override void OnGameTick(float dt)
     {
         // Server handles updating attributes.
@@ -71,8 +79,11 @@ internal class EntityBehaviorStinky : EntityBehavior
         return Constants.MOD_ID + ".stinky";
     }
 
-    // Initialization. Ensure bathtime tree and stinkiness attributes exist
-    // on entity.
+    /// <summary>
+    /// Initialization. Ensure bathtime tree and stinkiness attributes exists on entity.
+    /// </summary>
+    /// <param name="properties"></param>
+    /// <param name="attributes"></param>
     public override void Initialize(EntityProperties properties, JsonObject attributes)
     {
         ITreeAttribute treeAttribute = entity.WatchedAttributes.GetTreeAttribute(Constants.MOD_ID);
