@@ -1,9 +1,28 @@
-namespace BathTime.EntityBehaviors;
+using Vintagestory.API.Common.Entities;
 
-public interface IStinkyRateMultiplierModifier
+namespace BathTime;
+
+public interface IStinkyRateModifier
 {
-    public bool active { get; }
-    public double modifier { get; }
+    /// <summary>
+    /// Is modifier active for entity?
+    /// </summary>
+    /// <param name="entity"></param>
+    /// <returns></returns>
+    public bool StinkyRateModifierIsActive(Entity entity);
+
+    /// <summary>
+    /// Update rateMultiplier.
+    /// </summary>
+    /// <param name="rateMultplier"></param>
+    /// <returns></returns>
+    public double StinkyModifyRate(Entity entity, double rateMultplier);
+
+    /// <summary>
+    /// Priority of this rate multiplier. Higher priority multipliers are applied LAST, allowing them to potentially
+    /// supersede the effects of lower priority multipliers.
+    /// </summary>
+    public double stinkyPriority { get; }
 }
 
 

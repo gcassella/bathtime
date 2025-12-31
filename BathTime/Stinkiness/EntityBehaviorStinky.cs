@@ -1,5 +1,5 @@
 using System;
-using Vintagestory.API.Client;
+using System.Linq;
 using Vintagestory.API.Common;
 using Vintagestory.API.Common.Entities;
 using Vintagestory.API.Datastructures;
@@ -9,9 +9,29 @@ namespace BathTime;
 internal class EntityBehaviorStinky : EntityBehavior
 {
     /// <summary>
-    /// Rate multiplier for increment of stinkiness. Linearly increases rate at which stinkiness accumulates.
+    /// Rate multiplier for increment of stinkiness. Linearly multiplies rate at which normalized time advances.
     /// </summary>
-    public double rateMultiplier = 1.0;
+    private double rateMultiplier = 1.0;
+
+    private IStinkyRateModifier[] rateMultiplierModifiers;
+
+    public void RegisterRateMultiplierModifier(Type rateMultiplierModifier)
+    {
+        dynamic? newModifier = Activator.CreateInstance(rateMultiplierModifier);
+        if (newModifier is null)
+        {
+            return;
+        }
+        rateMultiplierModifiers = rateMultiplierModifiers
+        .Append(
+            (IStinkyRateModifier)newModifier
+        ).OrderBy(
+            mod =>
+            {
+                return mod.stinkyPriority;
+            }
+        ).ToArray();
+    }
 
     /// <summary>
     /// Number of days required to reach max stinkiness when rateMultiplier is 1.0.
@@ -65,11 +85,20 @@ internal class EntityBehaviorStinky : EntityBehavior
         // Server handles updating attributes.
         if (entity.Api.Side == EnumAppSide.Server)
         {
+            foreach (var modifier in rateMultiplierModifiers)
+            {
+                if (modifier.StinkyRateModifierIsActive(entity))
+                {
+                    rateMultiplier = modifier.StinkyModifyRate(entity, rateMultiplier);
+                }
+            }
+
             double delta = (entity.World.Calendar.TotalDays - lastUpdatedDays) / maxStinkinessDays;
             double normalizedStartTime = 1 - Math.Sqrt(1 - Stinkiness);
             // For large deltas, normalizedEndTime can exceed 1 and must be clamped.
             double normalizedEndTime = Math.Clamp(normalizedStartTime + rateMultiplier * delta, 0, 1);
             Stinkiness = normalizedEndTime * (2 - normalizedEndTime);
+            entity.Api.Logger.Notification("Rate Multiplier: " + rateMultiplier + " EndTime: " + normalizedEndTime + " Stinkiness: " + (normalizedEndTime * (2 - normalizedEndTime)));
             lastUpdatedDays = entity.World.Calendar.TotalDays;
         }
     }
@@ -97,5 +126,7 @@ internal class EntityBehaviorStinky : EntityBehavior
 
     public EntityBehaviorStinky(Entity entity) : base(entity)
     {
+        rateMultiplierModifiers = [];
+        RegisterRateMultiplierModifier(typeof(StinkyRateMultiplierModifierWater));
     }
 }
