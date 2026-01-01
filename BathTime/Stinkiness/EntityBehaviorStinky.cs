@@ -129,5 +129,6 @@ internal class EntityBehaviorStinky : EntityBehavior
     public EntityBehaviorStinky(Entity entity) : base(entity)
     {
         RegisterRateMultiplierModifier(new StinkyRateModifierBath(entity));
+        RegisterRateMultiplierModifier(new StinkyRateModifierBodyTemperature(entity));
     }
 }

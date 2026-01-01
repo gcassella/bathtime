@@ -1,5 +1,3 @@
-using Vintagestory.API.Common.Entities;
-
 namespace BathTime;
 
 public interface IStinkyRateModifier
@@ -21,8 +19,8 @@ public interface IStinkyRateModifier
     /// <summary>
     /// Priority of this rate multiplier. Higher priority multipliers are applied LAST, allowing them to potentially
     /// supersede the effects of lower priority multipliers.
+    /// 
+    /// By convention use 0.0 for additive modifiers, 0.5 for multiplicative modifiers, 1.0 for overriding modifiers.
     /// </summary>
     public double stinkyPriority { get; }
 }
-
-
