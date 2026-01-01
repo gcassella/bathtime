@@ -6,15 +6,49 @@ using Vintagestory.GameContent;
 
 namespace BathTime;
 
-public class StinkyRateModifierBath(Entity entity) : IStinkyRateModifier
+public partial class BathtimeConfig : BathtimeBaseConfig<BathtimeConfig>, IHasConfigName
+{
+    public double bathingRateModifier { get; set; } = -5.0;
+
+    public double bathingInsideRateModifier { get; set; } = -50.0;
+
+    public bool bathingUseBodyTemperature { get; set; } = true;
+
+    public double bathingWithBoilerMultiplier { get; set; } = 1.4;
+}
+
+
+public class StinkyRateModifierBath : IStinkyRateModifier, IListenConfigReload<BathtimeConfig>
 {
 
-    private RoomRegistry roomRegistry = entity.Api.ModLoader.GetModSystem<RoomRegistry>();
-    private Entity entity = entity;
+    private RoomRegistry roomRegistry;
 
-    private ICachingBlockAccessor? blockAccess = entity.Api.World.GetCachingBlockAccessor(false, false);
+    private Entity entity;
+
+    private ICachingBlockAccessor? blockAccess;
 
     private BlockPos blockPos = new(0);
+
+    private BathtimeConfig _config = new();
+
+    public BathtimeConfig config
+    {
+        get => _config;
+        set => _config = value;
+    }
+
+    public StinkyRateModifierBath(Entity entity)
+    {
+        roomRegistry = entity.Api.ModLoader.GetModSystem<RoomRegistry>();
+        this.entity = entity;
+        blockAccess = entity.Api.World.GetCachingBlockAccessor(false, false);
+
+        if (entity.Api.Side == EnumAppSide.Server)
+        {
+            (this as IListenConfigReload<BathtimeConfig>).LoadConfig(entity.Api);
+            (this as IListenConfigReload<BathtimeConfig>).ListenConfig(entity.Api);
+        }
+    }
 
     ~StinkyRateModifierBath()
     {
@@ -59,13 +93,16 @@ public class StinkyRateModifierBath(Entity entity) : IStinkyRateModifier
 
     public double StinkyModifyRate(double rateMultiplier)
     {
-        double accumulator = -25;
+        double accumulator = config.bathingRateModifier;
 
         Room room = roomRegistry.GetRoomForPosition(entity.Pos.AsBlockPos);
         bool inRoom = room.ExitCount == 0;
-        accumulator += inRoom ? -50 : 0;
+        accumulator += inRoom ? config.bathingInsideRateModifier : 0;
 
-        if (entity.GetBehavior<EntityBehaviorBodyTemperature>()?.CurBodyTemperature is float bodyTemp)
+        if (
+            (entity.GetBehavior<EntityBehaviorBodyTemperature>()?.CurBodyTemperature is float bodyTemp)
+            && config.bathingUseBodyTemperature
+        )
         {
             accumulator *= Math.Clamp(bodyTemp / 37, 0, 1);
         }
@@ -94,7 +131,7 @@ public class StinkyRateModifierBath(Entity entity) : IStinkyRateModifier
                         BlockEntityBoiler beb = entity.Api.World.BlockAccessor.GetBlockEntity<BlockEntityBoiler>(blockPos);
                         if (beb is not null && (beb.IsBurning || beb.IsSmoldering))
                         {
-                            accumulator *= 1.4;
+                            accumulator *= config.bathingWithBoilerMultiplier;
 
                             // Also heal entity if they are bathing in a boiler bath.
                             applyBathHealing();

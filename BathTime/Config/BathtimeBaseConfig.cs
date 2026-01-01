@@ -2,9 +2,10 @@ using System;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using Vintagestory.API.Common;
 
-namespace BathTime.Config;
+namespace BathTime;
 
 
 public interface IHasConfigName
@@ -15,6 +16,23 @@ public interface IHasConfigName
 
 public class BathtimeBaseConfig<TSelfReferenceType> where TSelfReferenceType : IHasConfigName, new()
 {
+    // Thread safe static boolean, see https://stackoverflow.com/a/49233660.
+    private static int _cacheIsDirtyBackValue = 1;
+    private static bool cacheIsDirty
+    {
+        get
+        {
+            return Interlocked.CompareExchange(ref _cacheIsDirtyBackValue, 1, 1) == 1;
+        }
+        set
+        {
+            if (value) Interlocked.CompareExchange(ref _cacheIsDirtyBackValue, 1, 0);
+            else Interlocked.CompareExchange(ref _cacheIsDirtyBackValue, 0, 1);
+        }
+    }
+
+    private static TSelfReferenceType cached = new();
+
     public new static Type GetType()
     {
         return typeof(TSelfReferenceType);
@@ -49,20 +67,33 @@ public class BathtimeBaseConfig<TSelfReferenceType> where TSelfReferenceType : I
         string configName = GetConfigName(new()) ?? throw new MissingMemberException("Tried loading config class with no name! Mod is borked.");
         try
         {
-            var maybe_config = api.LoadModConfig<TSelfReferenceType?>(configName);
-            return maybe_config ?? throw new FileNotFoundException("Could not find " + configName + ".");
+            TSelfReferenceType? maybe_config;
+            if (cacheIsDirty)
+            {
+                maybe_config = api.LoadModConfig<TSelfReferenceType?>(configName);
+                cached = maybe_config ?? throw new FileNotFoundException("Could not find " + configName + ".");
+                cacheIsDirty = false;
+            }
+            else
+            {
+                maybe_config = cached;
+            }
+            return maybe_config;
         }
         catch (Exception exc)
         {
-            api.Logger.Error(Constants.LOGGING_PREFIX + exc);
             TSelfReferenceType config = new();
 
             // Always return a valid default config on a loading exception, but only write default to disk if the
             // exception is FileNotFoundException.
             if (exc is FileNotFoundException)
             {
-                api.Logger.Warning("Writing default config.");
+                api.Logger.Warning(Constants.LOGGING_PREFIX + "Writing default config.");
                 api.StoreModConfig(config, configName);
+            }
+            else
+            {
+                api.Logger.Error(Constants.LOGGING_PREFIX + exc);
             }
 
             return config;
@@ -88,7 +119,7 @@ public class BathtimeBaseConfig<TSelfReferenceType> where TSelfReferenceType : I
 
             valueProperty.SetValue(config, typeConverter.ConvertFromString(value));
             api.StoreModConfig(config, configName);
-            api.Event.PushEvent(Constants.RELOAD_COMMAND);
+            cacheIsDirty = true;
         }
         catch (Exception exc)
         {

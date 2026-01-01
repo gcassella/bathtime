@@ -1,33 +1,30 @@
 using System;
-using BathTime.Config;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
 
-namespace BathTime.HUD;
+namespace BathTime;
 
-public class StinkBarHud : HudElement
+public class StinkBarHud : HudElement, IListenConfigReload<BathtimeClientConfig>
 {
     GuiElementStatbar? stinkBar;
     private long listenerId;
 
-    private BathtimeClientConfig? config;
+    private BathtimeClientConfig _config = new();
 
-
-    private void LoadConfig()
+    public BathtimeClientConfig config
     {
-        capi.Logger.Notification(Constants.LOGGING_PREFIX + "Reloading UI config.");
-
-        ClearComposers();
-        stinkBar = null;
-
-        config = BathtimeClientConfig.LoadStoredConfig(capi);
-        ComposeGuis();
+        get => _config;
+        set => _config = value;
     }
 
-    private void ReloadEventHandler(string eventname, ref EnumHandling handling, IAttribute data)
+    private void OnLoadConfig()
     {
-        LoadConfig();
+        capi.Logger.Notification(Constants.LOGGING_PREFIX + "Reloading UI config.");
+        ClearComposers();
+        stinkBar = null;
+        (this as IListenConfigReload<BathtimeClientConfig>).LoadConfig(capi);
+        ComposeGuis();
     }
 
     public StinkBarHud(ICoreClientAPI capi) : base(capi)
@@ -38,11 +35,13 @@ public class StinkBarHud : HudElement
             0
         );
 
-        LoadConfig();
-        capi.Event.RegisterEventBusListener(
-            new EventBusListenerDelegate(ReloadEventHandler),
-            0.5,
-            Constants.RELOAD_COMMAND
+        OnLoadConfig();
+        (this as IListenConfigReload<BathtimeClientConfig>).ListenConfig(
+            capi,
+            (string eventname, ref EnumHandling handling, IAttribute data) =>
+            {
+                OnLoadConfig();
+            }
         );
     }
 

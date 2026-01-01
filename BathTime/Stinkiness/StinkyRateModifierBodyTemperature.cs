@@ -1,28 +1,66 @@
 using System;
+using Vintagestory.API.Common;
 using Vintagestory.API.Common.Entities;
 using Vintagestory.API.MathTools;
 using Vintagestory.GameContent;
 
 namespace BathTime;
 
-public class StinkyRateModifierBodyTemperature(Entity entity) : IStinkyRateModifier
+public partial class BathtimeConfig : BathtimeBaseConfig<BathtimeConfig>, IHasConfigName
+{
+    public bool stinkyUseBodyTemperature { get; set; } = true;
+
+    public double stinkyBodyTemperatureCoefficient { get; set; } = 0.151;
+
+    public double stinkyBodyTemperatureExponent { get; set; } = 3;
+
+    public float stinkyBodyTemperatureMultiplierMax { get; set; } = 0.75f;
+}
+
+public class StinkyRateModifierBodyTemperature : IStinkyRateModifier, IListenConfigReload<BathtimeConfig>
 {
     public double stinkyPriority => 0.5;
 
-    private Entity entity = entity;
+    private Entity entity;
+
+    private BathtimeConfig _config = new();
+
+    public BathtimeConfig config
+    {
+        get => _config;
+        set => _config = value;
+    }
+
+    public StinkyRateModifierBodyTemperature(Entity entity)
+    {
+        this.entity = entity;
+
+        if (entity.Api.Side == EnumAppSide.Server)
+        {
+            (this as IListenConfigReload<BathtimeConfig>).LoadConfig(entity.Api);
+            (this as IListenConfigReload<BathtimeConfig>).ListenConfig(entity.Api);
+        }
+    }
 
     public double StinkyModifyRate(double rateMultplier)
     {
         EntityBehaviorBodyTemperature? bodyTempBehavior = entity.GetBehavior<EntityBehaviorBodyTemperature>();
         float bodyTemp = bodyTempBehavior?.CurBodyTemperature ?? 37.0f;
         float bodyTempDelta = bodyTemp - bodyTempBehavior?.NormalBodyTemperature ?? 37.0f;
-        float rateFactor = (float)Math.Pow(0.151 * (double)bodyTempDelta, 3);
-        rateFactor = GameMath.Clamp(rateFactor, -0.75f, 0.75f);
+        float rateFactor = (float)Math.Pow(
+            config.stinkyBodyTemperatureCoefficient * (double)bodyTempDelta,
+            config.stinkyBodyTemperatureExponent
+        );
+        rateFactor = GameMath.Clamp(
+            rateFactor,
+            -config.stinkyBodyTemperatureMultiplierMax,
+            config.stinkyBodyTemperatureMultiplierMax
+        );
         return rateMultplier * rateFactor;
     }
 
     public bool StinkyRateModifierIsActive()
     {
-        return entity.HasBehavior<EntityBehaviorBodyTemperature>();
+        return config.stinkyUseBodyTemperature && entity.HasBehavior<EntityBehaviorBodyTemperature>();
     }
 }

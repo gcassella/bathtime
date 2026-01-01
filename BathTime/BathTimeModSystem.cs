@@ -1,19 +1,17 @@
 ﻿using Vintagestory.API.Client;
 using Vintagestory.API.Server;
 using Vintagestory.API.Common;
-using BathTime.HUD;
-using BathTime.Config;
 using Vintagestory.API.Common.CommandAbbr;
 using System.Linq;
 using Vintagestory.API.Util;
+using System;
 
 namespace BathTime;
 
-#nullable disable
 
 public class BathTimeModSystem : ModSystem
 {
-    StinkParticleSystem stinkParticleSystem;
+    StinkParticleSystem? stinkParticleSystem;
 
     public override void Start(ICoreAPI api)
     {
@@ -47,12 +45,19 @@ public class BathTimeModSystem : ModSystem
                 .HandleWith(
                     (args) =>
                     {
-                        var valueName = args[0] as string;
-                        var value = args[1] as string;
-                        var success = BathtimeConfig.UpdateStoredConfig(sapi, valueName, value);
+                        string valueName = (string)(args[0] ?? throw new ArgumentNullException());
+                        string value = (string)(args[1] ?? throw new ArgumentNullException());
+                        bool success = BathtimeConfig.UpdateStoredConfig(sapi, valueName, value);
 
-                        if (success) return TextCommandResult.Success("Set " + valueName + "=" + value + " succeeded.");
-                        else return TextCommandResult.Error("Set " + valueName + "=" + value + " failed.");
+                        if (success)
+                        {
+                            sapi.Event.PushEvent(Constants.RELOAD_COMMAND);
+                            return TextCommandResult.Success("Set " + valueName + "=" + value + " succeeded.");
+                        }
+                        else
+                        {
+                            return TextCommandResult.Error("Set " + valueName + "=" + value + " failed.");
+                        }
                     }
                 )
             .EndSub();
@@ -130,12 +135,19 @@ public class BathTimeModSystem : ModSystem
                 .HandleWith(
                     (args) =>
                     {
-                        var valueName = args[0] as string;
-                        var value = args[1] as string;
-                        var success = BathtimeClientConfig.UpdateStoredConfig(capi, valueName, value);
+                        string valueName = (string)(args[0] ?? throw new ArgumentNullException());
+                        string value = (string)(args[1] ?? throw new ArgumentNullException());
+                        bool success = BathtimeClientConfig.UpdateStoredConfig(capi, valueName, value);
 
-                        if (success) return TextCommandResult.Success("Set " + valueName + "=" + value + " succeeded.");
-                        else return TextCommandResult.Error("Set " + valueName + "=" + value + " failed.");
+                        if (success)
+                        {
+                            capi.Event.PushEvent(Constants.RELOAD_COMMAND);
+                            return TextCommandResult.Success("Set " + valueName + "=" + value + " succeeded.");
+                        }
+                        else
+                        {
+                            return TextCommandResult.Error("Set " + valueName + "=" + value + " failed.");
+                        }
                     }
                 )
             .EndSub();

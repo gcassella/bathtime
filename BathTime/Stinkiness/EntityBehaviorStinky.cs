@@ -6,8 +6,21 @@ using Vintagestory.API.Datastructures;
 
 namespace BathTime;
 
-internal class EntityBehaviorStinky : EntityBehavior
+public partial class BathtimeConfig : BathtimeBaseConfig<BathtimeConfig>, IHasConfigName
 {
+    public double maxStinkinessDays { get; set; } = 2.0;
+}
+
+internal class EntityBehaviorStinky : EntityBehavior, IListenConfigReload<BathtimeConfig>
+{
+    private BathtimeConfig _config = new();
+
+    public BathtimeConfig config
+    {
+        get => _config;
+        set => _config = value;
+    }
+
     /// <summary>
     /// Rate multiplier for increment of stinkiness. Linearly multiplies rate at which normalized time advances.
     /// </summary>
@@ -34,11 +47,6 @@ internal class EntityBehaviorStinky : EntityBehavior
             }
         ).ToArray();
     }
-
-    /// <summary>
-    /// Number of days required to reach max stinkiness when rateMultiplier is 1.0.
-    /// </summary>
-    private double maxStinkinessDays = 2.0;
 
     /// <summary>
     /// Days from calendar beginning when attributes were last updated.
@@ -84,6 +92,7 @@ internal class EntityBehaviorStinky : EntityBehavior
     /// <param name="dt">Unused.</param>
     public override void OnGameTick(float dt)
     {
+        if (config is null) return;
         // Server handles updating attributes.
         if (entity.Api.Side == EnumAppSide.Server)
         {
@@ -95,8 +104,7 @@ internal class EntityBehaviorStinky : EntityBehavior
                     rateMultiplier = modifier.StinkyModifyRate(rateMultiplier);
                 }
             }
-
-            double delta = (entity.World.Calendar.TotalDays - lastUpdatedDays) / maxStinkinessDays;
+            double delta = (entity.World.Calendar.TotalDays - lastUpdatedDays) / config.maxStinkinessDays;
             double normalizedStartTime = 1 - Math.Sqrt(1 - Stinkiness);
             // For large deltas, normalizedEndTime can exceed 1 and must be clamped.
             double normalizedEndTime = Math.Clamp(normalizedStartTime + rateMultiplier * delta, 0, 1);
@@ -130,5 +138,11 @@ internal class EntityBehaviorStinky : EntityBehavior
     {
         RegisterRateMultiplierModifier(new StinkyRateModifierBath(entity));
         RegisterRateMultiplierModifier(new StinkyRateModifierBodyTemperature(entity));
+
+        if (entity.Api.Side == EnumAppSide.Server)
+        {
+            (this as IListenConfigReload<BathtimeConfig>).LoadConfig(entity.Api);
+            (this as IListenConfigReload<BathtimeConfig>).ListenConfig(entity.Api);
+        }
     }
 }

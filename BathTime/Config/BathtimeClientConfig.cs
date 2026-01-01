@@ -1,4 +1,4 @@
-namespace BathTime.Config;
+namespace BathTime;
 
 public class BathtimeClientConfig() : BathtimeBaseConfig<BathtimeClientConfig>, IHasConfigName
 {
