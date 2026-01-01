@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using Vintagestory.API.Common;
+using Vintagestory.API.Datastructures;
 
 namespace BathTime;
 
@@ -60,6 +61,12 @@ public class BathtimeBaseConfig<TSelfReferenceType> where TSelfReferenceType : I
         }
     }
 
+    public static void GloballyReloadStoredConfig(ICoreAPI api)
+    {
+        cacheIsDirty = true;
+        api.Event.PushEvent(Constants.RELOAD_COMMAND);
+    }
+
     public static TSelfReferenceType LoadStoredConfig(ICoreAPI api)
     {
         // Don't catch this, points to a fundamental code error in the mode.
@@ -71,6 +78,8 @@ public class BathtimeBaseConfig<TSelfReferenceType> where TSelfReferenceType : I
             {
                 maybe_config = api.LoadModConfig<TSelfReferenceType?>(configName);
                 cached = maybe_config ?? throw new FileNotFoundException("Could not find " + configName + ".");
+                // Store after load to propagate any new defaults to the file.
+                api.StoreModConfig(maybe_config, configName);
                 cacheIsDirty = false;
             }
             else
@@ -118,7 +127,7 @@ public class BathtimeBaseConfig<TSelfReferenceType> where TSelfReferenceType : I
 
             valueProperty.SetValue(config, typeConverter.ConvertFromString(value));
             api.StoreModConfig(config, configName);
-            cacheIsDirty = true;
+            GloballyReloadStoredConfig(api);
         }
         catch (Exception exc)
         {

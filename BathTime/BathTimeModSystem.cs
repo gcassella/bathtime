@@ -28,7 +28,7 @@ public class BathTimeModSystem : ModSystem
                 .HandleWith(
                     args =>
                     {
-                        sapi.Event.PushEvent(Constants.RELOAD_COMMAND);
+                        BathtimeConfig.GloballyReloadStoredConfig(sapi);
                         return TextCommandResult.Success();
                     }
                 )
@@ -51,7 +51,6 @@ public class BathTimeModSystem : ModSystem
 
                         if (success)
                         {
-                            sapi.Event.PushEvent(Constants.RELOAD_COMMAND);
                             return TextCommandResult.Success("Set " + valueName + "=" + value + " succeeded.");
                         }
                         else
@@ -116,7 +115,7 @@ public class BathTimeModSystem : ModSystem
                 .HandleWith(
                     args =>
                     {
-                        capi.Event.PushEvent(Constants.RELOAD_COMMAND);
+                        BathtimeClientConfig.GloballyReloadStoredConfig(capi);
                         return TextCommandResult.Success();
                     }
                 )
@@ -141,7 +140,6 @@ public class BathTimeModSystem : ModSystem
 
                         if (success)
                         {
-                            capi.Event.PushEvent(Constants.RELOAD_COMMAND);
                             return TextCommandResult.Success("Set " + valueName + "=" + value + " succeeded.");
                         }
                         else

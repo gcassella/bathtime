@@ -33,15 +33,4 @@ public static class ConfigReloadExtensions
             Constants.RELOAD_COMMAND
         );
     }
-
-    public static void ListenConfig<TReloader, TConfig>(this TReloader configReloader, ICoreAPI api, EventBusListenerDelegate onReload)
-    where TReloader : IHasConfig<TConfig>
-    where TConfig : BathtimeBaseConfig<TConfig>, IHasConfigName, new()
-    {
-        api.Event.RegisterEventBusListener(
-            new EventBusListenerDelegate(onReload),
-            0.5,
-            Constants.RELOAD_COMMAND
-        );
-    }
 }

@@ -23,7 +23,6 @@ public class StinkBarHud : HudElement, IHasConfig<BathtimeClientConfig>
         capi.Logger.Notification(Constants.LOGGING_PREFIX + "Reloading UI config.");
         ClearComposers();
         stinkBar = null;
-        this.LoadConfig<StinkBarHud, BathtimeClientConfig>(capi);
         ComposeGuis();
     }
 
@@ -35,13 +34,18 @@ public class StinkBarHud : HudElement, IHasConfig<BathtimeClientConfig>
             0
         );
 
+        this.LoadConfig<StinkBarHud, BathtimeClientConfig>(capi);
         OnLoadConfig();
-        this.ListenConfig<StinkBarHud, BathtimeClientConfig>(
-            capi,
-            (string eventname, ref EnumHandling handling, IAttribute data) =>
-            {
-                OnLoadConfig();
-            }
+        this.ListenConfig<StinkBarHud, BathtimeClientConfig>(capi);
+        capi.Event.RegisterEventBusListener(
+            new EventBusListenerDelegate(
+                (string eventname, ref EnumHandling handling, IAttribute data) =>
+                {
+                    OnLoadConfig();
+                }
+            ),
+            0.5,
+            Constants.RELOAD_COMMAND
         );
     }
 
