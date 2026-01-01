@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel;
+using System.IO;
 using System.Linq;
 using Vintagestory.API.Common;
 
@@ -42,53 +43,58 @@ public class BathtimeBaseConfig<TSelfReferenceType> where TSelfReferenceType : I
         }
     }
 
-    public static bool UpdateStoredConfig(ICoreAPI api, string valueName, string value)
+    public static TSelfReferenceType LoadStoredConfig(ICoreAPI api)
     {
-        TSelfReferenceType? config = new();
-        string? configName = GetConfigName(config);
-
-        if (configName is null)
-        {
-            api.Logger.Error("Tried updating config class with no name! Mod is borked.");
-            return false;
-        }
-
+        // Don't catch this, points to a fundamental code error in the mode.
+        string configName = GetConfigName(new()) ?? throw new MissingMemberException("Tried loading config class with no name! Mod is borked.");
         try
         {
-            config = api.LoadModConfig<TSelfReferenceType?>(configName);
+            var maybe_config = api.LoadModConfig<TSelfReferenceType?>(configName);
+            return maybe_config ?? throw new FileNotFoundException("Could not find " + configName + ".");
         }
-        catch
+        catch (Exception exc)
         {
-            api.Logger.Error("Could not load " + configName + ", is there a typo?");
+            api.Logger.Error(Constants.LOGGING_PREFIX + exc);
+            TSelfReferenceType config = new();
+
+            // Always return a valid default config on a loading exception, but only write default to disk if the
+            // exception is FileNotFoundException.
+            if (exc is FileNotFoundException)
+            {
+                api.Logger.Warning("Writing default config.");
+                api.StoreModConfig(config, configName);
+            }
+
+            return config;
+        }
+    }
+
+    public static bool UpdateStoredConfig(ICoreAPI api, string valueName, string value)
+    {
+        // Don't catch this, points to a fundamental code error in the mode.
+        string configName = GetConfigName(new()) ?? throw new MissingMemberException("Tried updating config class with no name! Mod is borked.");
+        try
+        {
+            TSelfReferenceType config = LoadStoredConfig(api);
+
+            var valueProperty = GetType().GetProperty(valueName);
+            Type valueType = valueProperty?.GetValue(config)?.GetType() ?? throw new ArgumentException("Could not find " + valueName + " in the config.");
+
+            var typeConverter = TypeDescriptor.GetConverter(valueType);
+            if (!typeConverter.IsValid(value))
+            {
+                throw new InvalidCastException("Value " + value + " could not be converted to type of " + valueName + ": " + valueType);
+            }
+
+            valueProperty.SetValue(config, typeConverter.ConvertFromString(value));
+            api.StoreModConfig(config, configName);
+            api.Event.PushEvent(Constants.RELOAD_COMMAND);
+        }
+        catch (Exception exc)
+        {
+            api.Logger.Error(Constants.LOGGING_PREFIX + exc);
             return false;
         }
-
-
-        if (config is null)
-        {
-            api.Logger.Warning(Constants.LOGGING_PREFIX + "Could not find " + configName + ". Writing default.");
-            config = new TSelfReferenceType();
-        }
-
-        var valueProperty = GetType().GetProperty(valueName);
-        Type? valueType = valueProperty?.GetValue(config)?.GetType();
-
-        if (valueProperty is null || valueType is null)
-        {
-            api.Logger.Warning(Constants.LOGGING_PREFIX + "Could not find " + valueName + " in the config.");
-            return false;
-        }
-
-        var typeConverter = TypeDescriptor.GetConverter(valueType);
-        if (!typeConverter.IsValid(value))
-        {
-            api.Logger.Warning(Constants.LOGGING_PREFIX + "Value " + value + " could not be converted to type of " + valueName + ": " + valueType);
-            return false;
-        }
-
-        valueProperty.SetValue(config, typeConverter.ConvertFromString(value));
-        api.StoreModConfig(config, configName);
-        api.Event.PushEvent(Constants.RELOAD_COMMAND);
 
         return true;
     }

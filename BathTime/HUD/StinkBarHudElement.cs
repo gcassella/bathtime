@@ -16,32 +16,18 @@ public class StinkBarHud : HudElement
 
     private void LoadConfig()
     {
-        try
-        {
-            config = capi.LoadModConfig<BathtimeClientConfig?>(Constants.CLIENT_CONFIG_NAME);
-            if (config is null)
-            {
-                capi.Logger.Warning(Constants.LOGGING_PREFIX + "Could not find Bathtime UI config. Writing default.");
-                config = new BathtimeClientConfig();
-                capi.StoreModConfig(config, Constants.CLIENT_CONFIG_NAME);
-            }
-        }
-        catch
-        {
-            capi.Logger.Warning(Constants.LOGGING_PREFIX + "Could not initialize Bathtime UI config. Did you make a typo? Falling back to default.");
-            config = new BathtimeClientConfig();
-        }
-    }
-
-    private void ReloadConfig(string eventname, ref EnumHandling handling, IAttribute data)
-    {
         capi.Logger.Notification(Constants.LOGGING_PREFIX + "Reloading UI config.");
 
         ClearComposers();
         stinkBar = null;
 
-        LoadConfig();
+        config = BathtimeClientConfig.LoadStoredConfig(capi);
         ComposeGuis();
+    }
+
+    private void ReloadEventHandler(string eventname, ref EnumHandling handling, IAttribute data)
+    {
+        LoadConfig();
     }
 
     public StinkBarHud(ICoreClientAPI capi) : base(capi)
@@ -54,7 +40,7 @@ public class StinkBarHud : HudElement
 
         LoadConfig();
         capi.Event.RegisterEventBusListener(
-            new EventBusListenerDelegate(ReloadConfig),
+            new EventBusListenerDelegate(ReloadEventHandler),
             0.5,
             Constants.RELOAD_COMMAND
         );

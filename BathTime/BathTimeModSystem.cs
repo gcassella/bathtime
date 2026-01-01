@@ -5,6 +5,7 @@ using BathTime.HUD;
 using BathTime.Config;
 using Vintagestory.API.Common.CommandAbbr;
 using System.Linq;
+using Vintagestory.API.Util;
 
 namespace BathTime;
 
@@ -21,17 +22,40 @@ public class BathTimeModSystem : ModSystem
 
     public override void StartServerSide(ICoreServerAPI sapi)
     {
-        sapi.ChatCommands.Create(Constants.RELOAD_COMMAND)
-            .RequiresPlayer()
-            .RequiresPrivilege(Privilege.chat)
-            .WithDescription("Reload server side Bathtime config.")
-            .HandleWith(
-                args =>
-                {
-                    sapi.Event.PushEvent(Constants.RELOAD_COMMAND);
-                    return TextCommandResult.Success();
-                }
-            );
+        sapi.ChatCommands.Create(Constants.MOD_ID)
+            .RequiresPrivilege(Privilege.controlserver)
+            .WithDescription("Commands for controlling server side Bathtime mod.")
+            .BeginSub(Constants.RELOAD_COMMAND)
+                .WithDescription("Reload server side Bathtime config.")
+                .HandleWith(
+                    args =>
+                    {
+                        sapi.Event.PushEvent(Constants.RELOAD_COMMAND);
+                        return TextCommandResult.Success();
+                    }
+                )
+            .EndSub()
+            .BeginSub(Constants.SET_COMMAND)
+                .WithDescription("Set server side Bathtime config value.")
+                .WithArgs([
+                    sapi.ChatCommands.Parsers.WordRange(
+                        "valueName",
+                        BathtimeConfig.ValueNames.Remove("configName")
+                    ),
+                    sapi.ChatCommands.Parsers.Word("value"),
+                ])
+                .HandleWith(
+                    (args) =>
+                    {
+                        var valueName = args[0] as string;
+                        var value = args[1] as string;
+                        var success = BathtimeConfig.UpdateStoredConfig(sapi, valueName, value);
+
+                        if (success) return TextCommandResult.Success("Set " + valueName + "=" + value + " succeeded.");
+                        else return TextCommandResult.Error("Set " + valueName + "=" + value + " failed.");
+                    }
+                )
+            .EndSub();
 
         sapi.ChatCommands.Create("hurtme")
             .RequiresPlayer()
@@ -99,7 +123,7 @@ public class BathTimeModSystem : ModSystem
                 .WithArgs([
                     capi.ChatCommands.Parsers.WordRange(
                         "valueName",
-                        BathtimeClientConfig.ValueNames
+                        BathtimeClientConfig.ValueNames.Remove("configName")
                     ),
                     capi.ChatCommands.Parsers.Word("value"),
                 ])
