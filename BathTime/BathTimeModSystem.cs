@@ -1,9 +1,10 @@
 ﻿using Vintagestory.API.Client;
 using Vintagestory.API.Server;
-using Vintagestory.API.Config;
 using Vintagestory.API.Common;
 using BathTime.HUD;
-using Vintagestory.API.MathTools;
+using BathTime.Config;
+using Vintagestory.API.Common.CommandAbbr;
+using System.Linq;
 
 namespace BathTime;
 
@@ -20,18 +21,99 @@ public class BathTimeModSystem : ModSystem
 
     public override void StartServerSide(ICoreServerAPI sapi)
     {
+        sapi.ChatCommands.Create(Constants.RELOAD_COMMAND)
+            .RequiresPlayer()
+            .RequiresPrivilege(Privilege.chat)
+            .WithDescription("Reload server side Bathtime config.")
+            .HandleWith(
+                args =>
+                {
+                    sapi.Event.PushEvent(Constants.RELOAD_COMMAND);
+                    return TextCommandResult.Success();
+                }
+            );
+
+        sapi.ChatCommands.Create("hurtme")
+            .RequiresPlayer()
+            .RequiresPrivilege(Privilege.chat)
+            .WithArgs(sapi.ChatCommands.Parsers.Float("damage"))
+            .HandleWith(
+                args =>
+                {
+                    DamageSource godDamage = new DamageSource()
+                    {
+                        Type = EnumDamageType.Injury,
+                        SourceEntity = null,
+                        KnockbackStrength = 0,
+                    };
+                    args.Caller.Player.Entity.ReceiveDamage(
+                        godDamage,
+                        (float)args[0]
+                    );
+                    return TextCommandResult.Success();
+                }
+            );
     }
 
     public override void StartClientSide(ICoreClientAPI capi)
     {
-        capi.Gui.RegisterDialog(
-            [
-                new StinkBarHud(capi)
-            ]
-        );
-
-
         stinkParticleSystem = new StinkParticleSystem(capi);
         stinkParticleSystem.Initialize();
+
+        capi.ChatCommands.Create(Constants.MOD_ID)
+            .RequiresPlayer()
+            .RequiresPrivilege(Privilege.chat)
+            .WithDescription("Commands for controlling client side Bathtime mod.")
+            .BeginSub(Constants.HUD_COMMAND)
+                .RequiresPrivilege(Privilege.gamemode)
+                .HandleWith(
+                    args =>
+                    {
+                        if (!capi.Gui.LoadedGuis.Any(gui => gui.GetType() == typeof(StinkBarHud)))
+                        {
+                            capi.Gui.RegisterDialog(
+                                [
+                                    new StinkBarHud(capi)
+                                ]
+                            );
+                        }
+
+                        return TextCommandResult.Success();
+                    }
+                )
+            .EndSub()
+            .BeginSub(Constants.RELOAD_COMMAND)
+                .WithDescription("Reload client side Bathtime config.")
+                .HandleWith(
+                    args =>
+                    {
+                        capi.Event.PushEvent(Constants.RELOAD_COMMAND);
+                        return TextCommandResult.Success();
+                    }
+                )
+            .EndSub()
+            .BeginSub(Constants.SET_COMMAND)
+                .RequiresPlayer()
+                .RequiresPrivilege(Privilege.chat)
+                .WithDescription("Set client side Bathtime config value.")
+                .WithArgs([
+                    capi.ChatCommands.Parsers.WordRange(
+                        "valueName",
+                        BathtimeClientConfig.ValueNames
+                    ),
+                    capi.ChatCommands.Parsers.Word("value"),
+                ])
+                .HandleWith(
+                    (args) =>
+                    {
+                        var valueName = args[0] as string;
+                        var value = args[1] as string;
+                        var success = BathtimeClientConfig.UpdateStoredConfig(capi, valueName, value);
+
+                        if (success) return TextCommandResult.Success("Set " + valueName + "=" + value + " succeeded.");
+                        else return TextCommandResult.Error("Set " + valueName + "=" + value + " failed.");
+                    }
+                )
+            .EndSub();
     }
 }
