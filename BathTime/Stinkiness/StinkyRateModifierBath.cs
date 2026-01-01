@@ -15,6 +15,8 @@ public partial class BathtimeConfig : BathtimeBaseConfig<BathtimeConfig>, IHasCo
     public bool bathingUseBodyTemperature { get; set; } = true;
 
     public double bathingWithBoilerMultiplier { get; set; } = 1.4;
+
+    public float bathingMaxHealingPerSecond { get; set; } = 0.05f;
 }
 
 
@@ -70,7 +72,7 @@ public class StinkyRateModifierBath : IStinkyRateModifier, IHasConfig<BathtimeCo
                 SourceEntity = null,
                 KnockbackStrength = 0,
             };
-            entity.ReceiveDamage(bathHealing, (float)Math.Sqrt(1 - stinkiness) * 0.050f);
+            entity.ReceiveDamage(bathHealing, (float)Math.Sqrt(1 - stinkiness) * config.bathingMaxHealingPerSecond);
             lastHealed = DateTime.Now;
         }
     }
