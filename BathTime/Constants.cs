@@ -5,7 +5,20 @@ namespace BathTime;
 internal static class Constants
 {
     public static string MOD_ID = "bathtime";
+
     public static string STINKINESS = "stinkiness";
+
+    public static string CONFIG_NAME = MOD_ID + ".json";
+
+    public static string UI_CONFIG_NAME = MOD_ID + "_ui.json";
+
+    public static string LOGGING_PREFIX = "[" + MOD_ID + "] ";
+
+    public static string RELOAD_COMMAND = "reload";
+
+    public static string SET_COMMAND = "set";
+
+    public static string HUD_COMMAND = "showhud";
 
     public static int[] stinkBaseColori = [108, 212, 60];
     public static double[] stinkBaseColord = [108.0 / 255.0, 212.0 / 255.0, 60.0 / 255.0];

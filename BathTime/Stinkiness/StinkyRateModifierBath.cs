@@ -8,7 +8,7 @@ namespace BathTime;
 
 public class StinkyRateModifierBath(Entity entity) : IStinkyRateModifier
 {
-    
+
     private RoomRegistry roomRegistry = entity.Api.ModLoader.GetModSystem<RoomRegistry>();
     private Entity entity = entity;
 
@@ -20,6 +20,25 @@ public class StinkyRateModifierBath(Entity entity) : IStinkyRateModifier
     {
         blockAccess?.Dispose();
         blockAccess = null;
+    }
+
+    private DateTime lastHealed = DateTime.Now;
+    private void applyBathHealing()
+    {
+        // Only apply heal once per second to avoid spamming logs.
+        if ((DateTime.Now - lastHealed).TotalSeconds < 1) return;
+
+        if (entity.GetBehavior<EntityBehaviorStinky>()?.Stinkiness is double stinkiness)
+        {
+            DamageSource bathHealing = new DamageSource()
+            {
+                Type = EnumDamageType.Heal,
+                SourceEntity = null,
+                KnockbackStrength = 0,
+            };
+            entity.ReceiveDamage(bathHealing, (float)Math.Sqrt(1 - stinkiness) * 0.050f);
+            lastHealed = DateTime.Now;
+        }
     }
 
     public bool StinkyRateModifierIsActive()
@@ -75,7 +94,10 @@ public class StinkyRateModifierBath(Entity entity) : IStinkyRateModifier
                         BlockEntityBoiler beb = entity.Api.World.BlockAccessor.GetBlockEntity<BlockEntityBoiler>(blockPos);
                         if (beb is not null && (beb.IsBurning || beb.IsSmoldering))
                         {
-                            accumulator *= 2;
+                            accumulator *= 1.4;
+
+                            // Also heal entity if they are bathing in a boiler bath.
+                            applyBathHealing();
                         }
                     }
                 }
