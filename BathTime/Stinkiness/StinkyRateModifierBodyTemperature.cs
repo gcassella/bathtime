@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.CompilerServices;
 using Vintagestory.API.Common;
 using Vintagestory.API.Common.Entities;
 using Vintagestory.API.MathTools;
@@ -17,7 +18,7 @@ public partial class BathtimeConfig : BathtimeBaseConfig<BathtimeConfig>, IHasCo
     public float stinkyBodyTemperatureMultiplierMax { get; set; } = 0.75f;
 }
 
-public class StinkyRateModifierBodyTemperature : IStinkyRateModifier, IListenConfigReload<BathtimeConfig>
+public class StinkyRateModifierBodyTemperature : IStinkyRateModifier, IHasConfig<BathtimeConfig>
 {
     public double stinkyPriority => 0.5;
 
@@ -37,8 +38,8 @@ public class StinkyRateModifierBodyTemperature : IStinkyRateModifier, IListenCon
 
         if (entity.Api.Side == EnumAppSide.Server)
         {
-            (this as IListenConfigReload<BathtimeConfig>).LoadConfig(entity.Api);
-            (this as IListenConfigReload<BathtimeConfig>).ListenConfig(entity.Api);
+            this.LoadConfig<StinkyRateModifierBodyTemperature, BathtimeConfig>(entity.Api);
+            this.ListenConfig<StinkyRateModifierBodyTemperature, BathtimeConfig>(entity.Api);
         }
     }
 

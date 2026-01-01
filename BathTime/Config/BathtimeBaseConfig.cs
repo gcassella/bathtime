@@ -13,7 +13,6 @@ public interface IHasConfigName
     public static string configName { get; } = "";
 }
 
-
 public class BathtimeBaseConfig<TSelfReferenceType> where TSelfReferenceType : IHasConfigName, new()
 {
     // Thread safe static boolean, see https://stackoverflow.com/a/49233660.

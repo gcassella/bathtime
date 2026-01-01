@@ -11,7 +11,7 @@ public partial class BathtimeConfig : BathtimeBaseConfig<BathtimeConfig>, IHasCo
     public double maxStinkinessDays { get; set; } = 2.0;
 }
 
-internal class EntityBehaviorStinky : EntityBehavior, IListenConfigReload<BathtimeConfig>
+internal class EntityBehaviorStinky : EntityBehavior, IHasConfig<BathtimeConfig>
 {
     private BathtimeConfig _config = new();
 
@@ -141,8 +141,8 @@ internal class EntityBehaviorStinky : EntityBehavior, IListenConfigReload<Bathti
 
         if (entity.Api.Side == EnumAppSide.Server)
         {
-            (this as IListenConfigReload<BathtimeConfig>).LoadConfig(entity.Api);
-            (this as IListenConfigReload<BathtimeConfig>).ListenConfig(entity.Api);
+            this.LoadConfig<EntityBehaviorStinky, BathtimeConfig>(entity.Api);
+            this.ListenConfig<EntityBehaviorStinky, BathtimeConfig>(entity.Api);
         }
     }
 }

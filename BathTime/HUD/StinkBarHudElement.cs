@@ -5,7 +5,7 @@ using Vintagestory.API.Datastructures;
 
 namespace BathTime;
 
-public class StinkBarHud : HudElement, IListenConfigReload<BathtimeClientConfig>
+public class StinkBarHud : HudElement, IHasConfig<BathtimeClientConfig>
 {
     GuiElementStatbar? stinkBar;
     private long listenerId;
@@ -23,7 +23,7 @@ public class StinkBarHud : HudElement, IListenConfigReload<BathtimeClientConfig>
         capi.Logger.Notification(Constants.LOGGING_PREFIX + "Reloading UI config.");
         ClearComposers();
         stinkBar = null;
-        (this as IListenConfigReload<BathtimeClientConfig>).LoadConfig(capi);
+        this.LoadConfig<StinkBarHud, BathtimeClientConfig>(capi);
         ComposeGuis();
     }
 
@@ -36,7 +36,7 @@ public class StinkBarHud : HudElement, IListenConfigReload<BathtimeClientConfig>
         );
 
         OnLoadConfig();
-        (this as IListenConfigReload<BathtimeClientConfig>).ListenConfig(
+        this.ListenConfig<StinkBarHud, BathtimeClientConfig>(
             capi,
             (string eventname, ref EnumHandling handling, IAttribute data) =>
             {

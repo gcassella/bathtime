@@ -18,7 +18,7 @@ public partial class BathtimeConfig : BathtimeBaseConfig<BathtimeConfig>, IHasCo
 }
 
 
-public class StinkyRateModifierBath : IStinkyRateModifier, IListenConfigReload<BathtimeConfig>
+public class StinkyRateModifierBath : IStinkyRateModifier, IHasConfig<BathtimeConfig>
 {
 
     private RoomRegistry roomRegistry;
@@ -45,8 +45,8 @@ public class StinkyRateModifierBath : IStinkyRateModifier, IListenConfigReload<B
 
         if (entity.Api.Side == EnumAppSide.Server)
         {
-            (this as IListenConfigReload<BathtimeConfig>).LoadConfig(entity.Api);
-            (this as IListenConfigReload<BathtimeConfig>).ListenConfig(entity.Api);
+            this.LoadConfig<StinkyRateModifierBath, BathtimeConfig>(entity.Api);
+            this.ListenConfig<StinkyRateModifierBath, BathtimeConfig>(entity.Api);
         }
     }
 
