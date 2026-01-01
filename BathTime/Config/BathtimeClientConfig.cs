@@ -2,7 +2,7 @@ namespace BathTime.Config;
 
 public class BathtimeClientConfig() : BathtimeBaseConfig<BathtimeClientConfig>, IHasConfigName
 {
-    public static string configName { get; } = Constants.UI_CONFIG_NAME;
+    public static string configName { get; } = Constants.CLIENT_CONFIG_NAME;
 
     public float stinkBarWidth { get; set; } = 388;
 

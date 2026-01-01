@@ -10,7 +10,7 @@ internal static class Constants
 
     public static string CONFIG_NAME = MOD_ID + ".json";
 
-    public static string UI_CONFIG_NAME = MOD_ID + "_ui.json";
+    public static string CLIENT_CONFIG_NAME = MOD_ID + "_client.json";
 
     public static string LOGGING_PREFIX = "[" + MOD_ID + "] ";
 

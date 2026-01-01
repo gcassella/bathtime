@@ -18,12 +18,12 @@ public class StinkBarHud : HudElement
     {
         try
         {
-            config = capi.LoadModConfig<BathtimeClientConfig?>(Constants.UI_CONFIG_NAME);
+            config = capi.LoadModConfig<BathtimeClientConfig?>(Constants.CLIENT_CONFIG_NAME);
             if (config is null)
             {
                 capi.Logger.Warning(Constants.LOGGING_PREFIX + "Could not find Bathtime UI config. Writing default.");
                 config = new BathtimeClientConfig();
-                capi.StoreModConfig(config, Constants.UI_CONFIG_NAME);
+                capi.StoreModConfig(config, Constants.CLIENT_CONFIG_NAME);
             }
         }
         catch
