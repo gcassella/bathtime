@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -8,12 +9,14 @@ using Vintagestory.API.Common;
 namespace BathTime;
 
 
-public interface IHasConfigName
+public interface IConfig
 {
     public static string configName { get; } = "";
+
+    public static EnumAppSide Side { get; }
 }
 
-public class BathtimeBaseConfig<TSelfReferenceType> where TSelfReferenceType : IHasConfigName, new()
+public static class BathtimeBaseConfig<TSelfReferenceType> where TSelfReferenceType : IConfig, new()
 {
     // Thread safe static boolean, see https://stackoverflow.com/a/49233660.
     private static int _cacheIsDirtyBackValue = 1;
@@ -32,24 +35,22 @@ public class BathtimeBaseConfig<TSelfReferenceType> where TSelfReferenceType : I
 
     private static TSelfReferenceType cached = new();
 
-    public new static Type GetType()
+
+    private new static Type GetType()
     {
         return typeof(TSelfReferenceType);
     }
 
-    public static string? GetConfigName(TSelfReferenceType config)
+    private static string GetConfigName(TSelfReferenceType config)
     {
-        var configNameField = GetType().GetProperty("configName");
-        if (configNameField is null)
-        {
-            return null;
-        }
-        var configNameValue = configNameField.GetValue(config);
-        if (configNameValue is null)
-        {
-            return null;
-        }
+        var configNameValue = (GetType().GetProperty("configName")?.GetValue(config)) ?? throw new UnreachableException("Tried loading config class with no name! Mod is borked.");
         return (string)configNameValue;
+    }
+
+    private static EnumAppSide GetConfigSide(TSelfReferenceType config)
+    {
+        var configNameValue = (GetType().GetProperty("Side")?.GetValue(config)) ?? throw new UnreachableException("Tried loading config class with no side! Mod is borked.");
+        return (EnumAppSide)configNameValue;
     }
 
     public static string[] ValueNames
@@ -66,7 +67,7 @@ public class BathtimeBaseConfig<TSelfReferenceType> where TSelfReferenceType : I
         api.Event.PushEvent(Constants.RELOAD_COMMAND);
     }
 
-    protected static TSelfReferenceType LoadInner(ICoreAPI api, string configName)
+    private static TSelfReferenceType LoadInner(ICoreAPI api, string configName)
     {
         TSelfReferenceType? maybe_config;
         if (cacheIsDirty)
@@ -86,8 +87,9 @@ public class BathtimeBaseConfig<TSelfReferenceType> where TSelfReferenceType : I
 
     public static TSelfReferenceType LoadStoredConfig(ICoreAPI api)
     {
-        // Don't catch this, points to a fundamental code error in the mode.
-        string configName = GetConfigName(cached) ?? throw new MissingMemberException("Tried loading config class with no name! Mod is borked.");
+        var configSide = GetConfigSide(cached);
+        if (api.Side != configSide) throw new UnreachableException("Tried to read config with side: " + nameof(configSide) + " on side: " + nameof(api.Side));
+        string configName = GetConfigName(cached);
         try
         {
             return LoadInner(api, configName);
@@ -116,8 +118,10 @@ public class BathtimeBaseConfig<TSelfReferenceType> where TSelfReferenceType : I
 
     public static bool UpdateStoredConfig(ICoreAPI api, string valueName, string value)
     {
-        // Don't catch this, points to a fundamental code error in the mode.
-        string configName = GetConfigName(cached) ?? throw new MissingMemberException("Tried updating config class with no name! Mod is borked.");
+
+        var configSide = GetConfigSide(cached);
+        if (api.Side != configSide) throw new UnreachableException("Tried to read config with side: " + nameof(configSide) + " on side: " + nameof(api.Side));
+        string configName = GetConfigName(cached);
         try
         {
             // Use LoadInner over LoadStoredConfig here to avoid loading and storing a modification of the default

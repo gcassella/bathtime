@@ -6,7 +6,7 @@ using Vintagestory.GameContent;
 
 namespace BathTime;
 
-public partial class BathtimeConfig : BathtimeBaseConfig<BathtimeConfig>, IHasConfigName
+public partial class BathtimeConfig : IConfig
 {
     public double bathingRateModifier { get; set; } = -5.0;
 
@@ -33,7 +33,7 @@ public class StinkyRateModifierBath : IStinkyRateModifier
 
     private BathtimeConfig config
     {
-        get => BathtimeConfig.LoadStoredConfig(entity.Api);
+        get => BathtimeBaseConfig<BathtimeConfig>.LoadStoredConfig(entity.Api);
     }
 
     public StinkyRateModifierBath(Entity entity)

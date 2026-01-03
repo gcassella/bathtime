@@ -20,7 +20,7 @@ public class BathTimeModSystem : ModSystem
 
     public override void StartServerSide(ICoreServerAPI sapi)
     {
-        BathtimeConfig.LoadStoredConfig(sapi);
+        BathtimeBaseConfig<BathtimeConfig>.LoadStoredConfig(sapi);
 
         sapi.ChatCommands.Create(Constants.MOD_ID)
             .RequiresPrivilege(Privilege.controlserver)
@@ -30,7 +30,7 @@ public class BathTimeModSystem : ModSystem
                 .HandleWith(
                     args =>
                     {
-                        BathtimeConfig.GloballyReloadStoredConfig(sapi);
+                        BathtimeBaseConfig<BathtimeConfig>.GloballyReloadStoredConfig(sapi);
                         return TextCommandResult.Success();
                     }
                 )
@@ -40,7 +40,7 @@ public class BathTimeModSystem : ModSystem
                 .WithArgs([
                     sapi.ChatCommands.Parsers.WordRange(
                         "valueName",
-                        BathtimeConfig.ValueNames.Remove("configName")
+                        BathtimeBaseConfig<BathtimeConfig>.ValueNames.Remove("configName")
                     ),
                     sapi.ChatCommands.Parsers.Word("value"),
                 ])
@@ -49,7 +49,7 @@ public class BathTimeModSystem : ModSystem
                     {
                         string valueName = (string)(args[0] ?? throw new ArgumentNullException());
                         string value = (string)(args[1] ?? throw new ArgumentNullException());
-                        bool success = BathtimeConfig.UpdateStoredConfig(sapi, valueName, value);
+                        bool success = BathtimeBaseConfig<BathtimeConfig>.UpdateStoredConfig(sapi, valueName, value);
 
                         if (success)
                         {
@@ -87,7 +87,7 @@ public class BathTimeModSystem : ModSystem
 
     public override void StartClientSide(ICoreClientAPI capi)
     {
-        BathtimeClientConfig.LoadStoredConfig(capi);
+        BathtimeBaseConfig<BathtimeClientConfig>.LoadStoredConfig(capi);
 
         stinkParticleSystem = new StinkParticleSystem(capi);
         stinkParticleSystem.Initialize();
@@ -119,7 +119,7 @@ public class BathTimeModSystem : ModSystem
                 .HandleWith(
                     args =>
                     {
-                        BathtimeClientConfig.GloballyReloadStoredConfig(capi);
+                        BathtimeBaseConfig<BathtimeClientConfig>.GloballyReloadStoredConfig(capi);
                         return TextCommandResult.Success();
                     }
                 )
@@ -131,7 +131,7 @@ public class BathTimeModSystem : ModSystem
                 .WithArgs([
                     capi.ChatCommands.Parsers.WordRange(
                         "valueName",
-                        BathtimeClientConfig.ValueNames.Remove("configName")
+                        BathtimeBaseConfig<BathtimeClientConfig>.ValueNames.Remove("configName")
                     ),
                     capi.ChatCommands.Parsers.Word("value"),
                 ])
@@ -140,7 +140,7 @@ public class BathTimeModSystem : ModSystem
                     {
                         string valueName = (string)(args[0] ?? throw new ArgumentNullException());
                         string value = (string)(args[1] ?? throw new ArgumentNullException());
-                        bool success = BathtimeClientConfig.UpdateStoredConfig(capi, valueName, value);
+                        bool success = BathtimeBaseConfig<BathtimeClientConfig>.UpdateStoredConfig(capi, valueName, value);
 
                         if (success)
                         {

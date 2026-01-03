@@ -5,7 +5,7 @@ using Vintagestory.GameContent;
 
 namespace BathTime;
 
-public partial class BathtimeConfig : BathtimeBaseConfig<BathtimeConfig>, IHasConfigName
+public partial class BathtimeConfig : IConfig
 {
     public bool stinkyUseBodyTemperature { get; set; } = true;
 
@@ -24,7 +24,7 @@ public class StinkyRateModifierBodyTemperature : IStinkyRateModifier
 
     public BathtimeConfig config
     {
-        get => BathtimeConfig.LoadStoredConfig(entity.Api);
+        get => BathtimeBaseConfig<BathtimeConfig>.LoadStoredConfig(entity.Api);
     }
 
     public StinkyRateModifierBodyTemperature(Entity entity)

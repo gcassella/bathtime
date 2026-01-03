@@ -12,7 +12,7 @@ public class StinkBarHud : HudElement
 
     private BathtimeClientConfig config
     {
-        get => BathtimeClientConfig.LoadStoredConfig(capi);
+        get => BathtimeBaseConfig<BathtimeClientConfig>.LoadStoredConfig(capi);
     }
 
     private void OnLoadConfig()

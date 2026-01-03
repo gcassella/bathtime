@@ -6,7 +6,7 @@ using Vintagestory.API.Datastructures;
 
 namespace BathTime;
 
-public partial class BathtimeConfig : BathtimeBaseConfig<BathtimeConfig>, IHasConfigName
+public partial class BathtimeConfig : IConfig
 {
     public double maxStinkinessDays { get; set; } = 2.0;
 }
@@ -15,7 +15,7 @@ internal class EntityBehaviorStinky : EntityBehavior
 {
     private BathtimeConfig config
     {
-        get => BathtimeConfig.LoadStoredConfig(entity.Api);
+        get => BathtimeBaseConfig<BathtimeConfig>.LoadStoredConfig(entity.Api);
     }
 
     /// <summary>
