@@ -143,7 +143,6 @@ public class StinkParticleSystem
         {
             Room room = capi.ModLoader.GetModSystem<RoomRegistry>().GetRoomForPosition(entity.Pos.AsBlockPos);
             bool inRoom = room.ExitCount == 0;
-            capi.Logger.Notification("foo" + entityParticleSystem?.Count["matinggnats"]);
             foreach (var _ in Enumerable.Range(1, (int)Math.Max(flySpawnCount.nextFloat(), 0)))
             {
                 EntityPos entityPos = entity.Pos;

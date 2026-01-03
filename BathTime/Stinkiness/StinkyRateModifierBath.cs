@@ -107,29 +107,29 @@ public class StinkyRateModifierBath : IStinkyRateModifier
         else if (inRoom)
         {
             blockAccess.Begin();
-            blockAccess.WalkBlocks(
+            blockAccess.SearchBlocks(
                 room.Location.Start.AsBlockPos,
                 room.Location.End.AsBlockPos,
-                (block, x, y, z) =>
+                (block, blockPos) =>
                 {
+                    // Boiler could be in room bounding box but not actually in the room.
+                    if (!room.Contains(blockPos))
+                    {
+                        return true;
+                    }
                     if (block is BlockBoiler)
                     {
-                        blockPos.Set(x, y, z);
-                        // Boiler could be in room bounding box but not actually in the room.
-                        if (!room.Contains(blockPos))
-                        {
-                            return;
-                        }
-
-                        BlockEntityBoiler beb = entity.Api.World.BlockAccessor.GetBlockEntity<BlockEntityBoiler>(blockPos);
+                        BlockEntityBoiler beb = blockAccess.GetBlockEntity<BlockEntityBoiler>(blockPos);
                         if (beb is not null && (beb.IsBurning || beb.IsSmoldering))
                         {
                             accumulator *= config.bathingWithBoilerMultiplier;
 
                             // Also heal entity if they are bathing in a boiler bath.
                             applyBathHealing();
+                            return false;
                         }
                     }
+                    return true;
                 }
             );
         }
