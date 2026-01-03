@@ -26,6 +26,7 @@
             "request": "attach",
             "processId": "${command:pickProcess}",
             "justMyCode": false,
+            "requireExactSource": false,
         }
     ]
 }

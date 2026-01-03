@@ -7,8 +7,12 @@
         "Shantari"
     ],
     "description": "Time to take a bath.",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "dependencies": {
         "game": "1.21.0"
-    }
+    },
+    "side": "Universal",
+    "website": "https://github.com/gcassella/bathtime",
+    "requiredOnClient": true,
+    "requiredOnServer": true
 }

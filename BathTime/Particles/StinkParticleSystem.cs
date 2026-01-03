@@ -79,13 +79,20 @@ public class StinkParticleSystem
         this.capi = capi;
     }
 
+    private EntityParticleSystem? _entityParticleSystem;
     public void Initialize()
     {
         flySpawnCount.avg = config.spawnCountMeanFlies;
         flySpawnCount.var = config.spawnCountVarianceFlies;
 
         capi.Event.RegisterAsyncParticleSpawner(AsyncParticleSpawn);
-        capi.ModLoader.GetModSystem<EntityParticleSystem>().OnSimTick += OnSimTickGnats;
+        _entityParticleSystem = capi.ModLoader.GetModSystem<EntityParticleSystem>();
+        if (_entityParticleSystem == null)
+        {
+            capi.Logger.Error(Constants.LOGGING_PREFIX + "Couldn't find entity particle system.");
+            return;
+        }
+        _entityParticleSystem.OnSimTick += OnSimTickGnats;
     }
 
     private bool AsyncParticleSpawn(float dt, IAsyncParticleManager manager)
@@ -124,55 +131,70 @@ public class StinkParticleSystem
     private BlockPos gnatSpawnPos = new(0);
     private void OnSimTickGnats(float dt)
     {
-        var entityParticleSystem = capi.ModLoader.GetModSystem<EntityParticleSystem>();
-        // Search for nearby very stinky entities
-        foreach (var entity in capi.World.GetEntitiesAround(
-            capi.World.Player.Entity.Pos.XYZ,
-            100.0f,
-            100.0f,
-            entity =>
-            {
-                return (
-                    entity.HasBehavior<EntityBehaviorStinky>()
-                    && entity.GetBehavior<EntityBehaviorStinky>()?.Stinkiness > 0.9
-                    && (double)flyShouldSpawn.nextFloat() < config.spawnChanceFlies
-                    && entityParticleSystem?.Count["matinggnats"] < config.maxFlies
-                );
-            }
-        ))
-        {
-            Room room = capi.ModLoader.GetModSystem<RoomRegistry>().GetRoomForPosition(entity.Pos.AsBlockPos);
-            bool inRoom = room.ExitCount == 0;
-            foreach (var _ in Enumerable.Range(1, (int)Math.Max(flySpawnCount.nextFloat(), 0)))
-            {
-                EntityPos entityPos = entity.Pos;
-                if (inRoom && (room.Location.SizeXZ < 25))
-                {
-                    gnatSpawnPos.Set(
-                        room.Location.Start.AsBlockPos.X + flyShouldSpawn.nextFloat() * room.Location.SizeX,
-                        room.Location.Start.AsBlockPos.Y + flyShouldSpawn.nextFloat() * room.Location.SizeY,
-                        room.Location.Start.AsBlockPos.Z + flyShouldSpawn.nextFloat() * room.Location.SizeZ
-                    );
-                }
-                else
-                {
-                    gnatSpawnPos.Set(
-                        entityPos.AsBlockPos.X + flySwarmPos[0].nextFloat(),
-                        entityPos.AsBlockPos.Y + flySwarmPos[1].nextFloat(),
-                        entityPos.AsBlockPos.Z + flySwarmPos[2].nextFloat()
-                    );
-                }
+        if (capi == null) return;
 
-                entityParticleSystem?.SpawnParticle(
-                    new EntityParticleMatingGnats(
-                        capi,
-                        flySwarmCohesion.nextFloat(),
-                        gnatSpawnPos.X,
-                        gnatSpawnPos.Y,
-                        gnatSpawnPos.Z
-                    )
-                );
+        var entityParticleSystem = capi.ModLoader.GetModSystem<EntityParticleSystem>();
+        if (entityParticleSystem is null) return;
+
+        var roomRegistry = capi.ModLoader.GetModSystem<RoomRegistry>();
+        if (roomRegistry is null) return;
+
+        try
+        {
+            // Search for nearby very stinky entities
+            foreach (var entity in capi.World.GetEntitiesAround(
+                capi.World.Player.Entity.Pos.XYZ,
+                100.0f,
+                100.0f,
+                entity =>
+                {
+                    return (
+                        entity.HasBehavior<EntityBehaviorStinky>()
+                        && (entity.GetBehavior<EntityBehaviorStinky>()?.Stinkiness) > 0.9
+                        && (double)flyShouldSpawn.nextFloat() < config.spawnChanceFlies
+                        && entityParticleSystem.Count["matinggnats"] < config.maxFlies
+                    );
+                }
+            ))
+            {
+                Room room = roomRegistry.GetRoomForPosition(entity.Pos.AsBlockPos);
+                bool inRoom = room.ExitCount == 0;
+                foreach (var _ in Enumerable.Range(0, (int)Math.Max(flySpawnCount.nextFloat(), 0)))
+                {
+                    EntityPos entityPos = entity.Pos;
+                    if (inRoom && (room.Location.SizeXZ < 25))
+                    {
+                        gnatSpawnPos.Set(
+                            room.Location.Start.AsBlockPos.X + flyShouldSpawn.nextFloat() * room.Location.SizeX,
+                            room.Location.Start.AsBlockPos.Y + flyShouldSpawn.nextFloat() * room.Location.SizeY,
+                            room.Location.Start.AsBlockPos.Z + flyShouldSpawn.nextFloat() * room.Location.SizeZ
+                        );
+                    }
+                    else
+                    {
+                        gnatSpawnPos.Set(
+                            entityPos.AsBlockPos.X + flySwarmPos[0].nextFloat(),
+                            entityPos.AsBlockPos.Y + flySwarmPos[1].nextFloat(),
+                            entityPos.AsBlockPos.Z + flySwarmPos[2].nextFloat()
+                        );
+                    }
+
+                    entityParticleSystem?.SpawnParticle(
+                        new EntityParticleMatingGnats(
+                            capi,
+                            flySwarmCohesion.nextFloat(),
+                            gnatSpawnPos.X,
+                            gnatSpawnPos.Y,
+                            gnatSpawnPos.Z
+                        )
+                    );
+                }
             }
+        }
+        catch (NullReferenceException exc)
+        {
+            capi.Logger.Error(exc);
+            return;
         }
     }
 }

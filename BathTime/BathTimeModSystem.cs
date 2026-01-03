@@ -61,28 +61,28 @@ public class BathTimeModSystem : ModSystem
                         }
                     }
                 )
-            .EndSub();
-
-        sapi.ChatCommands.Create("hurtme")
-            .RequiresPlayer()
-            .RequiresPrivilege(Privilege.chat)
-            .WithArgs(sapi.ChatCommands.Parsers.Float("damage"))
-            .HandleWith(
-                args =>
-                {
-                    DamageSource godDamage = new DamageSource()
+            .EndSub()
+            .BeginSub("hurtme")
+                .RequiresPlayer()
+                .RequiresPrivilege(Privilege.chat)
+                .WithArgs(sapi.ChatCommands.Parsers.Float("damage"))
+                .HandleWith(
+                    args =>
                     {
-                        Type = EnumDamageType.Injury,
-                        SourceEntity = null,
-                        KnockbackStrength = 0,
-                    };
-                    args.Caller.Player.Entity.ReceiveDamage(
-                        godDamage,
-                        (float)args[0]
-                    );
-                    return TextCommandResult.Success();
-                }
-            );
+                        DamageSource godDamage = new DamageSource()
+                        {
+                            Type = EnumDamageType.Injury,
+                            SourceEntity = null,
+                            KnockbackStrength = 0,
+                        };
+                        args.Caller.Player.Entity.ReceiveDamage(
+                            godDamage,
+                            (float)args[0]
+                        );
+                        return TextCommandResult.Success();
+                    }
+                )
+            .EndSub();
     }
 
     public override void StartClientSide(ICoreClientAPI capi)

@@ -52,11 +52,15 @@ internal class EntityBehaviorStinky : EntityBehavior
     {
         get
         {
-            return entity.WatchedAttributes.GetTreeAttribute(Constants.MOD_ID).GetDouble("last_updated_days");
+            ITreeAttribute? treeAttribute = entity.WatchedAttributes.GetTreeAttribute(Constants.MOD_ID);
+            if (treeAttribute is null) return entity.World.Calendar.TotalDays;
+            else return treeAttribute.GetDouble("last_updated_days");
         }
         set
         {
-            entity.WatchedAttributes.GetTreeAttribute(Constants.MOD_ID).SetDouble("last_updated_days", value);
+            ITreeAttribute? treeAttribute = entity.WatchedAttributes.GetTreeAttribute(Constants.MOD_ID);
+            if (treeAttribute is null) return;
+            treeAttribute.SetDouble("last_updated_days", value);
             entity.WatchedAttributes.MarkPathDirty(Constants.MOD_ID);
         }
     }
@@ -68,12 +72,16 @@ internal class EntityBehaviorStinky : EntityBehavior
     {
         get
         {
-            return entity.WatchedAttributes.GetTreeAttribute(Constants.MOD_ID).GetDouble(Constants.STINKINESS);
+            ITreeAttribute? treeAttribute = entity.WatchedAttributes.GetTreeAttribute(Constants.MOD_ID);
+            if (treeAttribute is null) return 0;
+            else return treeAttribute.GetDouble(Constants.STINKINESS);
         }
         set
         {
             double clampedValue = Math.Clamp(value, 0.0, 1.0);
-            entity.WatchedAttributes.GetTreeAttribute(Constants.MOD_ID).SetDouble(Constants.STINKINESS, clampedValue);
+            ITreeAttribute? treeAttribute = entity.WatchedAttributes.GetTreeAttribute(Constants.MOD_ID);
+            if (treeAttribute is null) return;
+            treeAttribute.SetDouble(Constants.STINKINESS, clampedValue);
             entity.WatchedAttributes.MarkPathDirty(Constants.MOD_ID);
         }
     }
