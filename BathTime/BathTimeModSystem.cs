@@ -20,6 +20,8 @@ public class BathTimeModSystem : ModSystem
 
     public override void StartServerSide(ICoreServerAPI sapi)
     {
+        BathtimeConfig.LoadStoredConfig(sapi);
+
         sapi.ChatCommands.Create(Constants.MOD_ID)
             .RequiresPrivilege(Privilege.controlserver)
             .WithDescription("Commands for controlling server side Bathtime mod.")
@@ -85,6 +87,8 @@ public class BathTimeModSystem : ModSystem
 
     public override void StartClientSide(ICoreClientAPI capi)
     {
+        BathtimeClientConfig.LoadStoredConfig(capi);
+
         stinkParticleSystem = new StinkParticleSystem(capi);
         stinkParticleSystem.Initialize();
 

@@ -11,14 +11,11 @@ public partial class BathtimeConfig : BathtimeBaseConfig<BathtimeConfig>, IHasCo
     public double maxStinkinessDays { get; set; } = 2.0;
 }
 
-internal class EntityBehaviorStinky : EntityBehavior, IHasConfig<BathtimeConfig>
+internal class EntityBehaviorStinky : EntityBehavior
 {
-    private BathtimeConfig _config = new();
-
-    public BathtimeConfig config
+    private BathtimeConfig config
     {
-        get => _config;
-        set => _config = value;
+        get => BathtimeConfig.LoadStoredConfig(entity.Api);
     }
 
     /// <summary>
@@ -92,7 +89,6 @@ internal class EntityBehaviorStinky : EntityBehavior, IHasConfig<BathtimeConfig>
     /// <param name="dt">Unused.</param>
     public override void OnGameTick(float dt)
     {
-        if (config is null) return;
         // Server handles updating attributes.
         if (entity.Api.Side == EnumAppSide.Server)
         {
@@ -138,11 +134,5 @@ internal class EntityBehaviorStinky : EntityBehavior, IHasConfig<BathtimeConfig>
     {
         RegisterRateMultiplierModifier(new StinkyRateModifierBath(entity));
         RegisterRateMultiplierModifier(new StinkyRateModifierBodyTemperature(entity));
-
-        if (entity.Api.Side == EnumAppSide.Server)
-        {
-            this.LoadConfig<EntityBehaviorStinky, BathtimeConfig>(entity.Api);
-            this.ListenConfig<EntityBehaviorStinky, BathtimeConfig>(entity.Api);
-        }
     }
 }

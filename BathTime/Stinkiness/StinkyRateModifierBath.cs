@@ -20,7 +20,7 @@ public partial class BathtimeConfig : BathtimeBaseConfig<BathtimeConfig>, IHasCo
 }
 
 
-public class StinkyRateModifierBath : IStinkyRateModifier, IHasConfig<BathtimeConfig>
+public class StinkyRateModifierBath : IStinkyRateModifier
 {
 
     private RoomRegistry roomRegistry;
@@ -31,12 +31,9 @@ public class StinkyRateModifierBath : IStinkyRateModifier, IHasConfig<BathtimeCo
 
     private BlockPos blockPos = new(0);
 
-    private BathtimeConfig _config = new();
-
-    public BathtimeConfig config
+    private BathtimeConfig config
     {
-        get => _config;
-        set => _config = value;
+        get => BathtimeConfig.LoadStoredConfig(entity.Api);
     }
 
     public StinkyRateModifierBath(Entity entity)
@@ -44,12 +41,6 @@ public class StinkyRateModifierBath : IStinkyRateModifier, IHasConfig<BathtimeCo
         roomRegistry = entity.Api.ModLoader.GetModSystem<RoomRegistry>();
         this.entity = entity;
         blockAccess = entity.Api.World.GetCachingBlockAccessor(false, false);
-
-        if (entity.Api.Side == EnumAppSide.Server)
-        {
-            this.LoadConfig<StinkyRateModifierBath, BathtimeConfig>(entity.Api);
-            this.ListenConfig<StinkyRateModifierBath, BathtimeConfig>(entity.Api);
-        }
     }
 
     ~StinkyRateModifierBath()

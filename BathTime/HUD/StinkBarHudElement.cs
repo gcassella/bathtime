@@ -5,17 +5,14 @@ using Vintagestory.API.Datastructures;
 
 namespace BathTime;
 
-public class StinkBarHud : HudElement, IHasConfig<BathtimeClientConfig>
+public class StinkBarHud : HudElement
 {
     GuiElementStatbar? stinkBar;
     private long listenerId;
 
-    private BathtimeClientConfig _config = new();
-
-    public BathtimeClientConfig config
+    private BathtimeClientConfig config
     {
-        get => _config;
-        set => _config = value;
+        get => BathtimeClientConfig.LoadStoredConfig(capi);
     }
 
     private void OnLoadConfig()
@@ -34,9 +31,7 @@ public class StinkBarHud : HudElement, IHasConfig<BathtimeClientConfig>
             0
         );
 
-        this.LoadConfig<StinkBarHud, BathtimeClientConfig>(capi);
         OnLoadConfig();
-        this.ListenConfig<StinkBarHud, BathtimeClientConfig>(capi);
         capi.Event.RegisterEventBusListener(
             new EventBusListenerDelegate(
                 (string eventname, ref EnumHandling handling, IAttribute data) =>

@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using Vintagestory.API.Common;
-using Vintagestory.API.Datastructures;
 
 namespace BathTime;
 
@@ -67,30 +66,37 @@ public class BathtimeBaseConfig<TSelfReferenceType> where TSelfReferenceType : I
         api.Event.PushEvent(Constants.RELOAD_COMMAND);
     }
 
+    protected static TSelfReferenceType LoadInner(ICoreAPI api, string configName)
+    {
+        TSelfReferenceType? maybe_config;
+        if (cacheIsDirty)
+        {
+            maybe_config = api.LoadModConfig<TSelfReferenceType?>(configName);
+            cached = maybe_config ?? throw new FileNotFoundException("Could not find " + configName + ".");
+            // Store after load to propagate any new defaults to the file.
+            api.StoreModConfig(maybe_config, configName);
+            cacheIsDirty = false;
+        }
+        else
+        {
+            maybe_config = cached;
+        }
+        return maybe_config;
+    }
+
     public static TSelfReferenceType LoadStoredConfig(ICoreAPI api)
     {
         // Don't catch this, points to a fundamental code error in the mode.
-        string configName = GetConfigName(new()) ?? throw new MissingMemberException("Tried loading config class with no name! Mod is borked.");
+        string configName = GetConfigName(cached) ?? throw new MissingMemberException("Tried loading config class with no name! Mod is borked.");
         try
         {
-            TSelfReferenceType? maybe_config;
-            if (cacheIsDirty)
-            {
-                maybe_config = api.LoadModConfig<TSelfReferenceType?>(configName);
-                cached = maybe_config ?? throw new FileNotFoundException("Could not find " + configName + ".");
-                // Store after load to propagate any new defaults to the file.
-                api.StoreModConfig(maybe_config, configName);
-                cacheIsDirty = false;
-            }
-            else
-            {
-                maybe_config = cached;
-            }
-            return maybe_config;
+            return LoadInner(api, configName);
         }
         catch (Exception exc)
         {
             TSelfReferenceType config = new();
+            cached = config;
+            cacheIsDirty = false;
 
             // Always return a valid default config on a loading exception, but only write default to disk if the
             // exception is FileNotFoundException.
@@ -111,10 +117,12 @@ public class BathtimeBaseConfig<TSelfReferenceType> where TSelfReferenceType : I
     public static bool UpdateStoredConfig(ICoreAPI api, string valueName, string value)
     {
         // Don't catch this, points to a fundamental code error in the mode.
-        string configName = GetConfigName(new()) ?? throw new MissingMemberException("Tried updating config class with no name! Mod is borked.");
+        string configName = GetConfigName(cached) ?? throw new MissingMemberException("Tried updating config class with no name! Mod is borked.");
         try
         {
-            TSelfReferenceType config = LoadStoredConfig(api);
+            // Use LoadInner over LoadStoredConfig here to avoid loading and storing a modification of the default
+            // config on a loading error, which would clobber user changes.
+            TSelfReferenceType config = LoadInner(api, configName);
 
             var valueProperty = GetType().GetProperty(valueName);
             Type valueType = valueProperty?.GetValue(config)?.GetType() ?? throw new ArgumentException("Could not find " + valueName + " in the config.");
