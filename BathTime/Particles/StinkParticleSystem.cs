@@ -3,6 +3,7 @@ using System.Linq;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Common.Entities;
+using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
 using Vintagestory.GameContent;
 
@@ -17,6 +18,13 @@ public partial class BathtimeClientConfig : IConfig
     public float spawnCountMeanFlies { get; set; } = 8;
 
     public float spawnCountVarianceFlies { get; set; } = 16;
+}
+
+public partial class BathtimeConfig : IConfig
+{
+    public double stinkParticleThreshold { get; set; } = Constants.DEFAULT_STINK_PARTICLE_THRESHOLD;
+
+    public double fliesParticleThreshold { get; set; } = Constants.DEFAULT_FLIES_PARTICLE_THRESHOLD;
 }
 
 public class StinkParticleSystem
@@ -74,6 +82,28 @@ public class StinkParticleSystem
 
     private Vec3d stinkPosVerticalOffset = new Vec3d(0.0, 0.5, 0.0);
 
+    private double stinkParticleThreshold
+    {
+        get
+        {
+            Entity playerEntity = capi.World.Player.Entity;
+            ITreeAttribute? treeAttribute = playerEntity.WatchedAttributes.GetTreeAttribute(Constants.MOD_ID);
+            if (treeAttribute is null) return Constants.DEFAULT_STINK_PARTICLE_THRESHOLD;
+            else return treeAttribute.GetDouble(Constants.STINK_PARTICLE_THRESHOLD);
+        }
+    }
+
+    private double fliesParticleThreshold
+    {
+        get
+        {
+            Entity playerEntity = capi.World.Player.Entity;
+            ITreeAttribute? treeAttribute = playerEntity.WatchedAttributes.GetTreeAttribute(Constants.MOD_ID);
+            if (treeAttribute is null) return Constants.DEFAULT_FLIES_PARTICLE_THRESHOLD;
+            else return treeAttribute.GetDouble(Constants.FLIES_PARTICLE_THRESHOLD);
+        }
+    }
+
     public StinkParticleSystem(ICoreClientAPI capi)
     {
         this.capi = capi;
@@ -106,7 +136,7 @@ public class StinkParticleSystem
             {
                 return (
                     entity.HasBehavior<EntityBehaviorStinky>()
-                    && entity.GetBehavior<EntityBehaviorStinky>()?.Stinkiness > 0.25
+                    && entity.GetBehavior<EntityBehaviorStinky>()?.Stinkiness > stinkParticleThreshold
                 );
             }
         ))
@@ -150,7 +180,7 @@ public class StinkParticleSystem
                 {
                     return (
                         entity.HasBehavior<EntityBehaviorStinky>()
-                        && (entity.GetBehavior<EntityBehaviorStinky>()?.Stinkiness) > 0.9
+                        && (entity.GetBehavior<EntityBehaviorStinky>()?.Stinkiness) > fliesParticleThreshold
                         && (double)flyShouldSpawn.nextFloat() < config.spawnChanceFlies
                         && entityParticleSystem.Count["matinggnats"] < config.maxFlies
                     );

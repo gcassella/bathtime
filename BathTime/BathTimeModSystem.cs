@@ -5,6 +5,7 @@ using Vintagestory.API.Common.CommandAbbr;
 using System.Linq;
 using Vintagestory.API.Util;
 using System;
+using Vintagestory.API.Datastructures;
 
 namespace BathTime;
 
@@ -18,9 +19,45 @@ public class BathTimeModSystem : ModSystem
         api.RegisterEntityBehaviorClass(Constants.MOD_ID + ".stinky", typeof(EntityBehaviorStinky));
     }
 
+    private void SyncConfigToPlayer(IPlayer player, BathtimeConfig config)
+    {
+
+        ITreeAttribute? treeAttribute = player.Entity.WatchedAttributes.GetTreeAttribute(Constants.MOD_ID);
+        if (treeAttribute is null)
+        {
+            player.Entity.WatchedAttributes.SetAttribute(Constants.MOD_ID, treeAttribute = new TreeAttribute());
+        }
+        treeAttribute.SetDouble(Constants.STINK_PARTICLE_THRESHOLD, config.stinkParticleThreshold);
+        treeAttribute.SetDouble(Constants.FLIES_PARTICLE_THRESHOLD, config.fliesParticleThreshold);
+        player.Entity.WatchedAttributes.MarkPathDirty(Constants.MOD_ID);
+    }
+
     public override void StartServerSide(ICoreServerAPI sapi)
     {
         BathtimeBaseConfig<BathtimeConfig>.LoadStoredConfig(sapi);
+
+        // Add event bus listeners to propagate server config values that need to be exposed to client
+        // via world attributes. Sync whenever a player joins or the config is reloaded.
+        sapi.Event.PlayerJoin += new PlayerDelegate(player =>
+        {
+            var config = BathtimeBaseConfig<BathtimeConfig>.LoadStoredConfig(sapi);
+            SyncConfigToPlayer(player, config);
+        });
+
+        sapi.Event.RegisterEventBusListener(
+            new EventBusListenerDelegate(
+                (string eventname, ref EnumHandling handling, IAttribute data) =>
+                {
+                    var config = BathtimeBaseConfig<BathtimeConfig>.LoadStoredConfig(sapi);
+                    foreach (IPlayer player in sapi.World.AllOnlinePlayers)
+                    {
+                        SyncConfigToPlayer(player, config);
+                    }
+                }
+            ),
+            0.5,
+            Constants.RELOAD_COMMAND
+        );
 
         sapi.ChatCommands.Create(Constants.MOD_ID)
             .RequiresPrivilege(Privilege.controlserver)

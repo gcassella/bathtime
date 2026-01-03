@@ -20,6 +20,14 @@ internal static class Constants
 
     public static string HUD_COMMAND = "showhud";
 
+    public static string STINK_PARTICLE_THRESHOLD = "stinkParticleThreshold";
+
+    public static string FLIES_PARTICLE_THRESHOLD = "fliesParticleThreshold";
+
+    public static double DEFAULT_STINK_PARTICLE_THRESHOLD = 0.25;
+
+    public static double DEFAULT_FLIES_PARTICLE_THRESHOLD = 0.90;
+
     public static int[] stinkBaseColori = [108, 212, 60];
     public static double[] stinkBaseColord = [108.0 / 255.0, 212.0 / 255.0, 60.0 / 255.0];
     public static int[] hsvaStinkBaseColor = ColorUtil.RgbToHsvInts(
