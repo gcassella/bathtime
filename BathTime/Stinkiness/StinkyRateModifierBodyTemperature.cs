@@ -46,7 +46,7 @@ public class StinkyRateModifierBodyTemperature : IStinkyRateModifier
             -config.stinkyBodyTemperatureMultiplierMax,
             config.stinkyBodyTemperatureMultiplierMax
         );
-        return rateMultplier * rateFactor;
+        return rateMultplier * (1 + rateFactor);
     }
 
     public bool StinkyRateModifierIsActive()

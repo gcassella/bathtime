@@ -1,14 +1,34 @@
-using BathTime;
+using System;
+using System.Linq;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Common.Entities;
 using Vintagestory.API.MathTools;
+using Vintagestory.GameContent;
+
+namespace BathTime;
+
+public partial class BathtimeClientConfig : IConfig
+{
+    public int maxFlies { get; set; } = 400;
+
+    public double spawnChanceFlies { get; set; } = 0.01;
+
+    public float spawnCountMeanFlies { get; set; } = 8;
+
+    public float spawnCountVarianceFlies { get; set; } = 16;
+}
 
 public class StinkParticleSystem
 {
     readonly ICoreClientAPI capi;
 
-    private static AdvancedParticleProperties stinkParticles = new AdvancedParticleProperties()
+    private BathtimeClientConfig config
+    {
+        get => BathtimeBaseConfig<BathtimeClientConfig>.LoadStoredConfig(capi);
+    }
+
+    private AdvancedParticleProperties stinkParticles = new AdvancedParticleProperties()
     {
         HsvaColor = [
             NatFloat.createUniform(Constants.hsvaStinkBaseColor[0], 16f),
@@ -40,8 +60,19 @@ public class StinkParticleSystem
         VertexFlags = 64 & VertexFlags.ReflectiveBitMask & VertexFlags.ZOffsetBitMask,
     };
 
-    private static Vec3d stinkPosVerticalOffset = new Vec3d(0.0, 0.5, 0.0);
+    private NatFloat flySpawnCount = new(8, 16, EnumDistribution.GAUSSIAN);
 
+    private NatFloat flySwarmCohesion = new(0.26f, 0.18f, EnumDistribution.UNIFORM);
+
+    private NatFloat[] flySwarmPos = [
+        new(0.0f, 2.5f, EnumDistribution.UNIFORM),
+        new(0, 0, EnumDistribution.UNIFORM),
+        new(0.0f, 2.5f, EnumDistribution.UNIFORM),
+    ];
+
+    private NatFloat flyShouldSpawn = new(0.5f, 0.5f, EnumDistribution.UNIFORM);
+
+    private Vec3d stinkPosVerticalOffset = new Vec3d(0.0, 0.5, 0.0);
 
     public StinkParticleSystem(ICoreClientAPI capi)
     {
@@ -50,7 +81,11 @@ public class StinkParticleSystem
 
     public void Initialize()
     {
+        flySpawnCount.avg = config.spawnCountMeanFlies;
+        flySpawnCount.var = config.spawnCountVarianceFlies;
+
         capi.Event.RegisterAsyncParticleSpawner(AsyncParticleSpawn);
+        capi.ModLoader.GetModSystem<EntityParticleSystem>().OnSimTick += OnSimTickGnats;
     }
 
     private bool AsyncParticleSpawn(float dt, IAsyncParticleManager manager)
@@ -60,29 +95,85 @@ public class StinkParticleSystem
             capi.World.Player.Entity.Pos.XYZ,
             100.0f,
             100.0f,
-            null
+            entity =>
+            {
+                return (
+                    entity.HasBehavior<EntityBehaviorStinky>()
+                    && entity.GetBehavior<EntityBehaviorStinky>()?.Stinkiness > 0.25
+                );
+            }
         ))
         {
-            if (!entity.HasBehavior<EntityBehaviorStinky>())
+            var stinkiness = entity.GetBehavior<EntityBehaviorStinky>()?.Stinkiness;
+            if (stinkiness is null)
             {
                 continue;
             }
-
-            double entityStinkiness = entity.WatchedAttributes.GetTreeAttribute(Constants.MOD_ID).GetDouble(Constants.STINKINESS);
-            if (entityStinkiness < 0.25)
-            {
-                continue;
-            }
-
             // Spawn particles on stinky entities.
             EntityPos entityPos = entity.Pos;
             stinkParticles.basePos = entityPos.XYZ + stinkPosVerticalOffset;
-            var normalizedStinkinessAboveThreshold = (entityStinkiness - 0.25) / 0.75;
+            var normalizedStinkinessAboveThreshold = (stinkiness - 0.25) / 0.75;
             var quantityMean = normalizedStinkinessAboveThreshold * normalizedStinkinessAboveThreshold;
             stinkParticles.Quantity = NatFloat.createGauss((float)quantityMean, 0.25f);
             manager.Spawn(stinkParticles);
         }
 
         return true;
+    }
+
+    private BlockPos gnatSpawnPos = new(0);
+    private void OnSimTickGnats(float dt)
+    {
+        var entityParticleSystem = capi.ModLoader.GetModSystem<EntityParticleSystem>();
+        // Search for nearby very stinky entities
+        foreach (var entity in capi.World.GetEntitiesAround(
+            capi.World.Player.Entity.Pos.XYZ,
+            100.0f,
+            100.0f,
+            entity =>
+            {
+                return (
+                    entity.HasBehavior<EntityBehaviorStinky>()
+                    && entity.GetBehavior<EntityBehaviorStinky>()?.Stinkiness > 0.9
+                    && (double)flyShouldSpawn.nextFloat() < config.spawnChanceFlies
+                    && entityParticleSystem?.Count["matinggnats"] < config.maxFlies
+                );
+            }
+        ))
+        {
+            Room room = capi.ModLoader.GetModSystem<RoomRegistry>().GetRoomForPosition(entity.Pos.AsBlockPos);
+            bool inRoom = room.ExitCount == 0;
+            capi.Logger.Notification("foo" + entityParticleSystem?.Count["matinggnats"]);
+            foreach (var _ in Enumerable.Range(1, (int)Math.Max(flySpawnCount.nextFloat(), 0)))
+            {
+                EntityPos entityPos = entity.Pos;
+                if (inRoom && (room.Location.SizeXZ < 25))
+                {
+                    gnatSpawnPos.Set(
+                        room.Location.Start.AsBlockPos.X + flyShouldSpawn.nextFloat() * room.Location.SizeX,
+                        room.Location.Start.AsBlockPos.Y + flyShouldSpawn.nextFloat() * room.Location.SizeY,
+                        room.Location.Start.AsBlockPos.Z + flyShouldSpawn.nextFloat() * room.Location.SizeZ
+                    );
+                }
+                else
+                {
+                    gnatSpawnPos.Set(
+                        entityPos.AsBlockPos.X + flySwarmPos[0].nextFloat(),
+                        entityPos.AsBlockPos.Y + flySwarmPos[1].nextFloat(),
+                        entityPos.AsBlockPos.Z + flySwarmPos[2].nextFloat()
+                    );
+                }
+
+                entityParticleSystem?.SpawnParticle(
+                    new EntityParticleMatingGnats(
+                        capi,
+                        flySwarmCohesion.nextFloat(),
+                        gnatSpawnPos.X,
+                        gnatSpawnPos.Y,
+                        gnatSpawnPos.Z
+                    )
+                );
+            }
+        }
     }
 }

@@ -2,7 +2,7 @@ using Vintagestory.API.Common;
 
 namespace BathTime;
 
-public class BathtimeClientConfig() : IConfig
+public partial class BathtimeClientConfig() : IConfig
 {
     public static string configName { get; } = Constants.CLIENT_CONFIG_NAME;
 
