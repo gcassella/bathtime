@@ -119,9 +119,9 @@ internal class EntityBehaviorStinky : EntityBehavior
             rateMultiplier = 1.0;
             foreach (var modifier in rateModifiers.Values.OrderBy(mod => mod.stinkyPriority))
             {
-                if (modifier.StinkyRateModifierIsActive())
+                if (modifier.IsActive)
                 {
-                    rateMultiplier = modifier.StinkyModifyRate(rateMultiplier);
+                    rateMultiplier = modifier.ModifyRate(rateMultiplier);
                 }
             }
             double delta = (entity.World.Calendar.TotalDays - lastUpdatedDays) / config.maxStinkinessDays;
@@ -153,6 +153,7 @@ internal class EntityBehaviorStinky : EntityBehavior
     {
         RegisterRateModifier(new StinkyRateModifierBath(entity));
         RegisterRateModifier(new StinkyRateModifierBodyTemperature(entity));
-        RegisterRateModifier(new StinkyRateModifierSoap(entity));
+        RegisterRateModifier(new SoapBuff(entity));
+        RegisterRateModifier(new PerfumeBuff(entity));
     }
 }

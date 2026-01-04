@@ -1,4 +1,6 @@
 {
-    "soap-item-info": "Application time: {0}\nSoapy duration: {1}",
-    "heldhelp-soap": "Soap up!"
+    "soap-item-info": "Application time: {0}\nSoapy duration: {1}\nStink rate reduction: {2}",
+    "perfume-item-info": "Application time: {0}\nPerfuming cooldown: {1}\nStinkiness reduction: {2}",
+    "heldhelp-soap": "Soap up!",
+    "heldhelp-perfume": "Apply perfume"
 }

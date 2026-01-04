@@ -65,12 +65,9 @@ public class StinkyRateModifierBath : IStinkyRateModifier
         }
     }
 
-    public bool StinkyRateModifierIsActive()
-    {
-        return EntityBehaviorStinky.IsBathing(entity);
-    }
+    public bool IsActive => EntityBehaviorStinky.IsBathing(entity);
 
-    public double StinkyModifyRate(double rateMultiplier)
+    public double ModifyRate(double rateMultiplier)
     {
         double accumulator = config.bathingRateModifier;
 

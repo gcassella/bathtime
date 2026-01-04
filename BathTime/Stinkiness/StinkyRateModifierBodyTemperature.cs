@@ -32,7 +32,7 @@ public class StinkyRateModifierBodyTemperature : IStinkyRateModifier
         this.entity = entity;
     }
 
-    public double StinkyModifyRate(double rateMultplier)
+    public double ModifyRate(double rateMultplier)
     {
         EntityBehaviorBodyTemperature? bodyTempBehavior = entity.GetBehavior<EntityBehaviorBodyTemperature>();
         float bodyTemp = bodyTempBehavior?.CurBodyTemperature ?? 37.0f;
@@ -49,10 +49,7 @@ public class StinkyRateModifierBodyTemperature : IStinkyRateModifier
         return rateMultplier * (1 + rateFactor);
     }
 
-    public bool StinkyRateModifierIsActive()
-    {
-        return config.stinkyUseBodyTemperature && entity.HasBehavior<EntityBehaviorBodyTemperature>();
-    }
+    public bool IsActive => config.stinkyUseBodyTemperature && entity.HasBehavior<EntityBehaviorBodyTemperature>();
 
     public string Identifier => "body_temp_modifier";
 }

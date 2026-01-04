@@ -19,6 +19,7 @@ public class BathTimeModSystem : ModSystem
         api.RegisterEntityBehaviorClass(Constants.MOD_ID + ".stinky", typeof(EntityBehaviorStinky));
 
         api.RegisterCollectibleBehaviorClass(Constants.MOD_ID + ".soap", typeof(CollectibleBehaviorSoap));
+        api.RegisterCollectibleBehaviorClass(Constants.MOD_ID + ".perfume", typeof(CollectibleBehaviorPerfume));
     }
 
     private void SyncConfigToPlayer(IPlayer player, BathtimeConfig config)

@@ -1,0 +1,15 @@
+[
+    {
+        "op": "addmerge",
+        "path": "/behaviors",
+        "value": [
+            {
+                "name": "bathtime.perfume",
+                "properties": {
+                    "ApplicationTimeSec": 3
+                }
+            }
+        ],
+        "file": "soaplyeandbloom:itemtypes/utility/poultice.json"
+    }
+]

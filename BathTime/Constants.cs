@@ -8,7 +8,9 @@ internal static class Constants
 
     public static string STINKINESS_KEY = "stinkiness";
 
-    public static string SOAPY_KEY = "soapy";
+    public static string SOAPY_BUFF_KEY = "soapy";
+
+    public static string PERFUME_BUFF_KEY = "perfumed";
 
     public static string CONFIG_NAME = MOD_ID + ".json";
 
@@ -54,5 +56,11 @@ internal static class Constants
         178,
         228,
         219
+    );
+
+    public static int[] hsvaPerfumeLinesColor = ColorUtil.RgbToHsvInts(
+        222,
+        85,
+        201
     );
 }

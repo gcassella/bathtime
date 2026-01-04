@@ -3,7 +3,6 @@ using System.Linq;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Common.Entities;
-using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
 using Vintagestory.GameContent;
 
@@ -66,6 +65,39 @@ public class StinkParticleSystem
         ],
         Size = NatFloat.createInvexp(0.2f, 0.5f),
         VertexFlags = 64 & VertexFlags.ReflectiveBitMask & VertexFlags.ZOffsetBitMask,
+    };
+
+    private AdvancedParticleProperties perfumeParticle = new AdvancedParticleProperties()
+    {
+        HsvaColor = [
+            NatFloat.createUniform(Constants.hsvaPerfumeLinesColor[0], 16f),
+            NatFloat.createUniform(Constants.hsvaPerfumeLinesColor[1], 16f),
+            NatFloat.createUniform(Constants.hsvaPerfumeLinesColor[2], 16f),
+            NatFloat.createUniform(128f, 64f),
+        ],
+        GravityEffect = NatFloat.createUniform(-0.00f, 0.0f),
+        TerrainCollision = true,
+        SelfPropelled = false,
+        DieOnRainHeightmap = false,
+        DieInLiquid = false,
+        DieInAir = false,
+        SwimOnLiquid = true,
+        WindAffectednes = 0.5f,
+        ParticleModel = EnumParticleModel.Quad,
+        LifeLength = NatFloat.createGauss(2.75f, 0.25f),
+        Velocity = [
+            NatFloat.createGauss(0f, 0.5f),
+            NatFloat.createGauss(0f, 0.5f),
+            NatFloat.createGauss(0f, 0.5f),
+        ],
+        PosOffset = [
+            NatFloat.createUniform(0f, 2.0f),
+            NatFloat.createUniform(1.0f, 0.0f),
+            NatFloat.createUniform(0f, 2.0f),
+        ],
+        Size = NatFloat.createInvexp(0.2f, 0.1f),
+        Quantity = NatFloat.createUniform(0.0f, 2.0f),
+        VertexFlags = 256 & VertexFlags.ZOffsetBitMask,
     };
 
     private AdvancedParticleProperties soapBubbleParticles = new AdvancedParticleProperties()
@@ -179,8 +211,7 @@ public class StinkParticleSystem
 
     private bool AsyncParticleSpawn(float dt, IAsyncParticleManager manager)
     {
-        bool isStinky = false;
-        bool isSoapy = false;
+
 
         // Search for nearby stinky entities
         foreach (var entity in capi.World.GetEntitiesAround(
@@ -189,20 +220,27 @@ public class StinkParticleSystem
             100.0f,
             entity =>
             {
-                isStinky = entity.GetBehavior<EntityBehaviorStinky>()?.Stinkiness > stinkParticleThreshold;
-                isSoapy = entity.GetBoolAttribute(Constants.SOAPY_KEY);
-                return isStinky || isSoapy;
+                return entity.GetBehavior<EntityBehaviorStinky>()?.Stinkiness > stinkParticleThreshold
+                || Buff.ActiveOnEntity(entity, Constants.SOAPY_BUFF_KEY)
+                || Buff.ActiveOnEntity(entity, Constants.PERFUME_BUFF_KEY);
             }
         ))
         {
             EntityPos entityPos = entity.Pos;
-            if (isSoapy)
+            if (Buff.ActiveOnEntity(entity, Constants.SOAPY_BUFF_KEY))
             {
                 soapBubbleParticles.basePos = entityPos.XYZ + particlePosVerticalOffset;
                 manager.Spawn(soapBubbleParticles);
             }
 
-            if (isStinky)
+            bool isPerfumed = Buff.ActiveOnEntity(entity, Constants.PERFUME_BUFF_KEY);
+            if (isPerfumed)
+            {
+                perfumeParticle.basePos = entityPos.XYZ + particlePosVerticalOffset;
+                manager.Spawn(perfumeParticle);
+            }
+
+            if (entity.GetBehavior<EntityBehaviorStinky>()?.Stinkiness > stinkParticleThreshold && !isPerfumed)
             {
                 var stinkiness = entity.GetBehavior<EntityBehaviorStinky>()?.Stinkiness;
                 if (stinkiness is null) continue;
