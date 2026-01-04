@@ -36,6 +36,16 @@ internal static class Constants
 
     public static double DEFAULT_FLIES_PARTICLE_THRESHOLD = 0.90;
 
+    public static double RATE_MULTIPLIER_ADDITIVE_PRIORITY = 0.0;
+
+    public static double RATE_MULTIPLIER_MULTIPLICATIVE_PRIORITY = 0.5;
+
+    public static double BATH_MULTIPLIER_DEFAULT_PRIOTIY = 1.0;
+
+    public static double BATH_MULTIPLIER_ADDITIVE_PRIORITY = 1.5;
+
+    public static double BATH_MULTIPLIER_MULTIPLICATIVE_PRIORITY = 2.0;
+
     public static int[] stinkBaseColori = [108, 212, 60];
     public static double[] stinkBaseColord = [108.0 / 255.0, 212.0 / 255.0, 60.0 / 255.0];
     public static int[] hsvaStinkBaseColor = ColorUtil.RgbToHsvInts(

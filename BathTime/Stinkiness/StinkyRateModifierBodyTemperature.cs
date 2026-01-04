@@ -18,7 +18,7 @@ public partial class BathtimeConfig : IConfig
 
 public class StinkyRateModifierBodyTemperature : IStinkyRateModifier
 {
-    public double stinkyPriority => 0.5;
+    public double stinkyPriority => Constants.RATE_MULTIPLIER_MULTIPLICATIVE_PRIORITY;
 
     private Entity entity;
 

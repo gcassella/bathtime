@@ -7,7 +7,7 @@ public class StinkyRateModifierSoap : IStinkyRateModifier
 {
     private Entity entity;
 
-    public double stinkyPriority => 1.5;
+    public double stinkyPriority => Constants.BATH_MULTIPLIER_ADDITIVE_PRIORITY;
 
     public double StinkyModifyRate(double rateMultplier)
     {
