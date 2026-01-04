@@ -1,0 +1,12 @@
+[
+  {
+    "op": "addmerge",
+    "path": "/behaviors",
+    "value": [
+      {
+        "name": "bathtime.soap"
+      }
+    ],
+    "file": "soaplyeandbloom:itemtypes/resource/soapbar.json"
+  }
+]

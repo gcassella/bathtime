@@ -17,6 +17,8 @@ public class BathTimeModSystem : ModSystem
     public override void Start(ICoreAPI api)
     {
         api.RegisterEntityBehaviorClass(Constants.MOD_ID + ".stinky", typeof(EntityBehaviorStinky));
+
+        api.RegisterCollectibleBehaviorClass(Constants.MOD_ID + ".soap", typeof(CollectibleBehaviorSoap));
     }
 
     private void SyncConfigToPlayer(IPlayer player, BathtimeConfig config)
@@ -77,7 +79,7 @@ public class BathTimeModSystem : ModSystem
                 .WithArgs([
                     sapi.ChatCommands.Parsers.WordRange(
                         "valueName",
-                        BathtimeBaseConfig<BathtimeConfig>.ValueNames.Remove("configName")
+                        BathtimeBaseConfig<BathtimeConfig>.ValueNames
                     ),
                     sapi.ChatCommands.Parsers.Word("value"),
                 ])

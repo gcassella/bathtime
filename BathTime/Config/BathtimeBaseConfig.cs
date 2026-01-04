@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using HarmonyLib;
 using Vintagestory.API.Common;
 
 namespace BathTime;
@@ -57,7 +58,7 @@ public static class BathtimeBaseConfig<TSelfReferenceType> where TSelfReferenceT
     {
         get
         {
-            return [.. GetType().GetProperties().Select(p => p.Name)];
+            return [.. GetType().GetProperties().Select(p => p.Name).Except(typeof(IConfig).GetPropertyNames())];
         }
     }
 

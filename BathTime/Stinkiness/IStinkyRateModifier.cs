@@ -20,7 +20,12 @@ public interface IStinkyRateModifier
     /// Priority of this rate multiplier. Higher priority multipliers are applied LAST, allowing them to potentially
     /// supersede the effects of lower priority multipliers.
     /// 
-    /// By convention use 0.0 for additive modifiers, 0.5 for multiplicative modifiers, 1.0 for overriding modifiers.
+    /// By convention use:
+    ///      0.0 for additive modifiers, 
+    ///      0.5 for multiplicative modifiers, 
+    ///      1.0 reserved for base bathing modifier,
+    ///      1.5 for additive modifiers to bathing,
+    ///      2.0 for multiplicative modifiers to bathing,
     /// </summary>
     public double stinkyPriority { get; }
 }

@@ -68,6 +68,64 @@ public class StinkParticleSystem
         VertexFlags = 64 & VertexFlags.ReflectiveBitMask & VertexFlags.ZOffsetBitMask,
     };
 
+    private AdvancedParticleProperties soapBubbleParticles = new AdvancedParticleProperties()
+    {
+        HsvaColor = [
+                NatFloat.createUniform(Constants.hsvaSoapBubbleBaseColor[0], 32f),
+                NatFloat.createUniform(Constants.hsvaSoapBubbleBaseColor[1], 64f),
+                NatFloat.createUniform(Constants.hsvaSoapBubbleBaseColor[2], 64f),
+                NatFloat.createUniform(160f, 32f),
+            ],
+        GravityEffect = NatFloat.createUniform(-0.02f, 0.0f),
+        TerrainCollision = true,
+        SelfPropelled = false,
+        DieOnRainHeightmap = false,
+        DieInLiquid = false,
+        DieInAir = false,
+        SwimOnLiquid = false,
+        WindAffectednes = 0.5f,
+        ParticleModel = EnumParticleModel.Cube,
+        LifeLength = NatFloat.createInvexp(0.5f, 0.5f),
+        Velocity = [
+                NatFloat.createGauss(0f, 0.25f),
+                NatFloat.createUniform(0f, 0f),
+                NatFloat.createGauss(0f, 0.25f),
+            ],
+        PosOffset = [
+                NatFloat.createUniform(0f, 0.2f),
+                NatFloat.createUniform(0.5f, 0.2f),
+                NatFloat.createUniform(0f, 0.2f),
+            ],
+        OpacityEvolve = new EvolvingNatFloat(EnumTransformFunction.QUADRATIC, -10f),
+        Size = NatFloat.createInvexp(0.8f, 0.5f),
+        Quantity = NatFloat.createGauss(4.0f, 0.25f),
+        VertexFlags = 16 & VertexFlags.ZOffsetBitMask,
+        DeathParticles = [new AdvancedParticleProperties(){
+                    HsvaColor = [
+                        NatFloat.createUniform(Constants.hsvaSoapBubbleBaseColor[0], 0f),
+                        NatFloat.createUniform(Constants.hsvaSoapBubbleBaseColor[1], 0f),
+                        NatFloat.createUniform(Constants.hsvaSoapBubbleBaseColor[2], 0f),
+                        NatFloat.createUniform(160f, 32f),
+                    ],
+                    ParticleModel = EnumParticleModel.Cube,
+                    PosOffset = [
+                        NatFloat.createUniform(0f, 0.02f),
+                        NatFloat.createUniform(0f, 0.02f),
+                        NatFloat.createUniform(0f, 0.02f),
+                    ],
+                    Velocity = [
+                        NatFloat.createGauss(0f, 2f),
+                        NatFloat.createGauss(0f, 2f),
+                        NatFloat.createGauss(0f, 2f),
+                    ],
+                    Size = NatFloat.createInvexp(0.1f, 0.2f),
+                    LifeLength = NatFloat.createUniform(0.1f, 0.0f),
+                    GravityEffect = NatFloat.createUniform(0.2f, 0.0f),
+                    Quantity = NatFloat.createUniform(0f, 4f),
+                }
+            ]
+    };
+
     private NatFloat flySpawnCount = new(8, 16, EnumDistribution.GAUSSIAN);
 
     private NatFloat flySwarmCohesion = new(0.26f, 0.18f, EnumDistribution.UNIFORM);
@@ -80,7 +138,7 @@ public class StinkParticleSystem
 
     private NatFloat flyShouldSpawn = new(0.5f, 0.5f, EnumDistribution.UNIFORM);
 
-    private Vec3d stinkPosVerticalOffset = new Vec3d(0.0, 0.5, 0.0);
+    private Vec3d particlePosVerticalOffset = new Vec3d(0.0, 0.5, 0.0);
 
     private double stinkParticleThreshold
     {
@@ -127,6 +185,9 @@ public class StinkParticleSystem
 
     private bool AsyncParticleSpawn(float dt, IAsyncParticleManager manager)
     {
+        bool isStinky = false;
+        bool isSoapy = false;
+
         // Search for nearby stinky entities
         foreach (var entity in capi.World.GetEntitiesAround(
             capi.World.Player.Entity.Pos.XYZ,
@@ -134,25 +195,31 @@ public class StinkParticleSystem
             100.0f,
             entity =>
             {
-                return (
-                    entity.HasBehavior<EntityBehaviorStinky>()
-                    && entity.GetBehavior<EntityBehaviorStinky>()?.Stinkiness > stinkParticleThreshold
-                );
+                isStinky = entity.GetBehavior<EntityBehaviorStinky>()?.Stinkiness > stinkParticleThreshold;
+                isSoapy = entity.GetBoolAttribute(Constants.SOAPY);
+                return isStinky || isSoapy;
             }
         ))
         {
-            var stinkiness = entity.GetBehavior<EntityBehaviorStinky>()?.Stinkiness;
-            if (stinkiness is null)
-            {
-                continue;
-            }
-            // Spawn particles on stinky entities.
             EntityPos entityPos = entity.Pos;
-            stinkParticles.basePos = entityPos.XYZ + stinkPosVerticalOffset;
-            var normalizedStinkinessAboveThreshold = (stinkiness - 0.25) / 0.75;
-            var quantityMean = normalizedStinkinessAboveThreshold * normalizedStinkinessAboveThreshold;
-            stinkParticles.Quantity = NatFloat.createGauss((float)quantityMean, 0.25f);
-            manager.Spawn(stinkParticles);
+            if (isSoapy)
+            {
+                soapBubbleParticles.basePos = entityPos.XYZ + particlePosVerticalOffset;
+                manager.Spawn(soapBubbleParticles);
+            }
+
+            if (isStinky)
+            {
+                var stinkiness = entity.GetBehavior<EntityBehaviorStinky>()?.Stinkiness;
+                if (stinkiness is null) continue;
+                // Spawn particles on stinky entities.
+                stinkParticles.basePos = entityPos.XYZ + particlePosVerticalOffset;
+                var normalizedStinkinessAboveThreshold = (stinkiness - stinkParticleThreshold) / (1 - stinkParticleThreshold);
+                var quantityMean = normalizedStinkinessAboveThreshold * normalizedStinkinessAboveThreshold;
+                stinkParticles.Quantity = NatFloat.createGauss((float)quantityMean, 0.25f);
+                manager.Spawn(stinkParticles);
+            }
+
         }
 
         return true;

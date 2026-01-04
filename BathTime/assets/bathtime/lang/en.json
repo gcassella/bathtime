@@ -1,3 +1,4 @@
 {
-    "hello": "hello world!"
+    "soap-item-info": "Application time: {0}\nSoapy duration: {1}",
+    "heldhelp-soap": "Soap up!"
 }

@@ -19,6 +19,27 @@ internal class EntityBehaviorStinky : EntityBehavior
     }
 
     /// <summary>
+    /// Static method for determining if entity is bathing.
+    /// </summary>
+    /// <param name="entity"></param>
+    /// <returns></returns>
+    public static bool IsBathing(Entity entity)
+    {
+        var inBlock = entity.Api.World.BlockAccessor.GetBlockRaw(
+            entity.Pos.AsBlockPos.X,
+            entity.Pos.AsBlockPos.InternalY,
+            entity.Pos.AsBlockPos.Z
+        );
+        return (
+            entity.FeetInLiquid &&
+            inBlock.BlockMaterial == EnumBlockMaterial.Liquid &&
+            (
+                inBlock.Code.Path.Contains("water")
+            )
+        );
+    }
+
+    /// <summary>
     /// Rate multiplier for increment of stinkiness. Linearly multiplies rate at which normalized time advances.
     /// </summary>
     private double rateMultiplier = 1.0;
@@ -142,5 +163,6 @@ internal class EntityBehaviorStinky : EntityBehavior
     {
         RegisterRateMultiplierModifier(new StinkyRateModifierBath(entity));
         RegisterRateMultiplierModifier(new StinkyRateModifierBodyTemperature(entity));
+        RegisterRateMultiplierModifier(new StinkyRateModifierSoap(entity));
     }
 }

@@ -8,6 +8,12 @@ internal static class Constants
 
     public static string STINKINESS = "stinkiness";
 
+    public static string SOAPY = "soapy";
+
+    public static string LAST_SOAP_UPDATE = "last_soap_update";
+
+    public static string SOAP_DURATION = "soap_duration";
+
     public static string CONFIG_NAME = MOD_ID + ".json";
 
     public static string CLIENT_CONFIG_NAME = MOD_ID + "_client.json";
@@ -34,5 +40,11 @@ internal static class Constants
         stinkBaseColori[0],
         stinkBaseColori[1],
         stinkBaseColori[2]
+    );
+
+    public static int[] hsvaSoapBubbleBaseColor = ColorUtil.RgbToHsvInts(
+        178,
+        228,
+        219
     );
 }

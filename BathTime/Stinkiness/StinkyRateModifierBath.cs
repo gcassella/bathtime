@@ -29,8 +29,6 @@ public class StinkyRateModifierBath : IStinkyRateModifier
 
     private ICachingBlockAccessor? blockAccess;
 
-    private BlockPos blockPos = new(0);
-
     private BathtimeConfig config
     {
         get => BathtimeBaseConfig<BathtimeConfig>.LoadStoredConfig(entity.Api);
@@ -70,18 +68,7 @@ public class StinkyRateModifierBath : IStinkyRateModifier
 
     public bool StinkyRateModifierIsActive()
     {
-        var inBlock = entity.Api.World.BlockAccessor.GetBlockRaw(
-            entity.Pos.AsBlockPos.X,
-            entity.Pos.AsBlockPos.InternalY,
-            entity.Pos.AsBlockPos.Z
-        );
-        return (
-            entity.FeetInLiquid &&
-            inBlock.BlockMaterial == EnumBlockMaterial.Liquid &&
-            (
-                inBlock.Code.Path.Contains("water")
-            )
-        );
+        return EntityBehaviorStinky.IsBathing(entity);
     }
 
     public double StinkyModifyRate(double rateMultiplier)
