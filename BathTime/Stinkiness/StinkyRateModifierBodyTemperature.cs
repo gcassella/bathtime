@@ -53,4 +53,6 @@ public class StinkyRateModifierBodyTemperature : IStinkyRateModifier
     {
         return config.stinkyUseBodyTemperature && entity.HasBehavior<EntityBehaviorBodyTemperature>();
     }
+
+    public string Identifier => "body_temp_modifier";
 }

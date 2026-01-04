@@ -123,5 +123,7 @@ public class StinkyRateModifierBath : IStinkyRateModifier
         return accumulator;
     }
 
+    public string Identifier => "bath_modifier";
+
     public double stinkyPriority => Constants.BATH_MULTIPLIER_DEFAULT_PRIOTIY;
 }

@@ -9,6 +9,16 @@ public class StinkyRateModifierSoap : IStinkyRateModifier
 
     public double stinkyPriority => Constants.BATH_MULTIPLIER_ADDITIVE_PRIORITY;
 
+    private double soapDurationHours;
+    private double soapLastUpdated;
+
+    public void ApplySoap(double duration)
+    {
+        entity.SetBoolAttribute(Constants.SOAPY_KEY, true);
+        soapDurationHours = duration;
+        soapLastUpdated = entity.Api.World.Calendar.TotalHours;
+    }
+
     public double StinkyModifyRate(double rateMultplier)
     {
         return rateMultplier - 50;
@@ -16,34 +26,27 @@ public class StinkyRateModifierSoap : IStinkyRateModifier
 
     public bool StinkyRateModifierIsActive()
     {
+        var nowHours = entity.Api.World.Calendar.TotalHours;
         bool active = false;
-        if (entity.GetBoolAttribute(Constants.SOAPY_KEY))
+
+        // If bathing and soapy, active and reduce soap duration.
+        if (EntityBehaviorStinky.IsBathing(entity) && soapDurationHours > 0)
         {
-            var nowHours = entity.Api.World.Calendar.TotalHours;
-            // TODO: replace this logic with a proper buffs system!!!
-            double soapDurationHours = entity.GetDoubleAttribute(Constants.SOAP_DURATION_KEY);
-            entity.Api.Logger.Notification(soapDurationHours.ToString());
-
-            // If bathing, reduce soap duration.
-            if (EntityBehaviorStinky.IsBathing(entity))
-            {
-                soapDurationHours -= nowHours - entity.GetDoubleAttribute(
-                    Constants.LAST_SOAP_UPDATE_KEY,
-                    defaultValue: soapDurationHours + 1
-                );
-                active = true;
-            }
-
-            if (soapDurationHours <= 0)
-            {
-                entity.SetBoolAttribute(Constants.SOAPY_KEY, false);
-            }
-
-            entity.SetDoubleAttribute(Constants.LAST_SOAP_UPDATE_KEY, nowHours);
-            entity.SetDoubleAttribute(Constants.SOAP_DURATION_KEY, soapDurationHours);
+            active = true;
+            soapDurationHours -= nowHours - soapLastUpdated;
         }
+
+        // Just finished washing off soap.
+        if (soapDurationHours <= 0 && active)
+        {
+            entity.SetBoolAttribute(Constants.SOAPY_KEY, false);
+        }
+
+        soapLastUpdated = nowHours;
         return active;
     }
+
+    public string Identifier => "soap_modifier";
 
     public StinkyRateModifierSoap(Entity entity)
     {

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Vintagestory.API.Common;
 using Vintagestory.API.Common.Entities;
@@ -45,25 +46,29 @@ internal class EntityBehaviorStinky : EntityBehavior
     private double rateMultiplier = 1.0;
 
     /// <summary>
-    /// Array of rate modifiers, sorted by modifier priority (ascending). Applied in order.
+    /// Dictionary of rate modifiers, keyed by identifiers.
     /// </summary>
-    private IStinkyRateModifier[] rateMultiplierModifiers = [];
+    private Dictionary<Type, IStinkyRateModifier> rateModifiers = new();
 
     /// <summary>
     /// Register a new modifier that will apply to this instance of the behavior.
     /// </summary>
     /// <param name="newModifier"></param>
-    public void RegisterRateMultiplierModifier(IStinkyRateModifier newModifier)
+    public void RegisterRateModifier(IStinkyRateModifier newModifier)
     {
-        rateMultiplierModifiers = rateMultiplierModifiers
-        .Append(
-            newModifier
-        ).OrderBy(
-            mod =>
-            {
-                return mod.stinkyPriority;
-            }
-        ).ToArray();
+        rateModifiers.Add(newModifier.GetType(), newModifier);
+    }
+
+    /// <summary>
+    /// Get a registered modifier by type. If none exists, returns null.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    public IStinkyRateModifier? GetRateModifier<T>() where T : IStinkyRateModifier
+    {
+        Type modifierType = typeof(T);
+        if (rateModifiers.ContainsKey(modifierType)) return rateModifiers[modifierType];
+        else return null;
     }
 
     /// <summary>
@@ -112,7 +117,7 @@ internal class EntityBehaviorStinky : EntityBehavior
         if (entity.Api.Side == EnumAppSide.Server)
         {
             rateMultiplier = 1.0;
-            foreach (var modifier in rateMultiplierModifiers)
+            foreach (var modifier in rateModifiers.Values.OrderBy(mod => mod.stinkyPriority))
             {
                 if (modifier.StinkyRateModifierIsActive())
                 {
@@ -146,8 +151,8 @@ internal class EntityBehaviorStinky : EntityBehavior
 
     public EntityBehaviorStinky(Entity entity) : base(entity)
     {
-        RegisterRateMultiplierModifier(new StinkyRateModifierBath(entity));
-        RegisterRateMultiplierModifier(new StinkyRateModifierBodyTemperature(entity));
-        RegisterRateMultiplierModifier(new StinkyRateModifierSoap(entity));
+        RegisterRateModifier(new StinkyRateModifierBath(entity));
+        RegisterRateModifier(new StinkyRateModifierBodyTemperature(entity));
+        RegisterRateModifier(new StinkyRateModifierSoap(entity));
     }
 }

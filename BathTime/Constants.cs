@@ -10,10 +10,6 @@ internal static class Constants
 
     public static string SOAPY_KEY = "soapy";
 
-    public static string LAST_SOAP_UPDATE_KEY = "last_soap_update";
-
-    public static string SOAP_DURATION_KEY = "soap_duration";
-
     public static string CONFIG_NAME = MOD_ID + ".json";
 
     public static string CLIENT_CONFIG_NAME = MOD_ID + "_client.json";
