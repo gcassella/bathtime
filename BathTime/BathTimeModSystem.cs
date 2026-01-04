@@ -23,15 +23,8 @@ public class BathTimeModSystem : ModSystem
 
     private void SyncConfigToPlayer(IPlayer player, BathtimeConfig config)
     {
-
-        ITreeAttribute? treeAttribute = player.Entity.WatchedAttributes.GetTreeAttribute(Constants.MOD_ID);
-        if (treeAttribute is null)
-        {
-            player.Entity.WatchedAttributes.SetAttribute(Constants.MOD_ID, treeAttribute = new TreeAttribute());
-        }
-        treeAttribute.SetDouble(Constants.STINK_PARTICLE_THRESHOLD, config.stinkParticleThreshold);
-        treeAttribute.SetDouble(Constants.FLIES_PARTICLE_THRESHOLD, config.fliesParticleThreshold);
-        player.Entity.WatchedAttributes.MarkPathDirty(Constants.MOD_ID);
+        player.Entity.SetDoubleAttribute(Constants.STINK_PARTICLE_THRESHOLD_KEY, config.stinkParticleThreshold);
+        player.Entity.SetDoubleAttribute(Constants.FLIES_PARTICLE_THRESHOLD_KEY, config.fliesParticleThreshold);
     }
 
     public override void StartServerSide(ICoreServerAPI sapi)

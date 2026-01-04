@@ -6,13 +6,13 @@ internal static class Constants
 {
     public static string MOD_ID = "bathtime";
 
-    public static string STINKINESS = "stinkiness";
+    public static string STINKINESS_KEY = "stinkiness";
 
-    public static string SOAPY = "soapy";
+    public static string SOAPY_KEY = "soapy";
 
-    public static string LAST_SOAP_UPDATE = "last_soap_update";
+    public static string LAST_SOAP_UPDATE_KEY = "last_soap_update";
 
-    public static string SOAP_DURATION = "soap_duration";
+    public static string SOAP_DURATION_KEY = "soap_duration";
 
     public static string CONFIG_NAME = MOD_ID + ".json";
 
@@ -26,11 +26,13 @@ internal static class Constants
 
     public static string HUD_COMMAND = "showhud";
 
-    public static string STINK_PARTICLE_THRESHOLD = "stinkParticleThreshold";
+    public static string STINK_PARTICLE_THRESHOLD_KEY = "stink_particle_threshold";
 
-    public static string FLIES_PARTICLE_THRESHOLD = "fliesParticleThreshold";
+    public static string FLIES_PARTICLE_THRESHOLD_KEY = "flies_particle_threshold";
 
-    public static double DEFAULT_STINK_PARTICLE_THRESHOLD = 0.25;
+    public static string LAST_STINKINESS_UPDATE_KEY = "last_stinkiness_update";
+
+    public static double DEFAULT_STINK_PARTICLE_THRESHOLD = 0.4375;
 
     public static double DEFAULT_FLIES_PARTICLE_THRESHOLD = 0.90;
 

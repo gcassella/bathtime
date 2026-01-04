@@ -73,16 +73,11 @@ internal class EntityBehaviorStinky : EntityBehavior
     {
         get
         {
-            ITreeAttribute? treeAttribute = entity.WatchedAttributes.GetTreeAttribute(Constants.MOD_ID);
-            if (treeAttribute is null) return entity.World.Calendar.TotalDays;
-            else return treeAttribute.GetDouble("last_updated_days");
+            return entity.GetDoubleAttribute(Constants.LAST_STINKINESS_UPDATE_KEY);
         }
         set
         {
-            ITreeAttribute? treeAttribute = entity.WatchedAttributes.GetTreeAttribute(Constants.MOD_ID);
-            if (treeAttribute is null) return;
-            treeAttribute.SetDouble("last_updated_days", value);
-            entity.WatchedAttributes.MarkPathDirty(Constants.MOD_ID);
+            entity.SetDoubleAttribute(Constants.LAST_STINKINESS_UPDATE_KEY, value);
         }
     }
 
@@ -93,17 +88,12 @@ internal class EntityBehaviorStinky : EntityBehavior
     {
         get
         {
-            ITreeAttribute? treeAttribute = entity.WatchedAttributes.GetTreeAttribute(Constants.MOD_ID);
-            if (treeAttribute is null) return 0;
-            else return treeAttribute.GetDouble(Constants.STINKINESS);
+            return entity.GetDoubleAttribute(Constants.STINKINESS_KEY);
         }
         set
         {
             double clampedValue = Math.Clamp(value, 0.0, 1.0);
-            ITreeAttribute? treeAttribute = entity.WatchedAttributes.GetTreeAttribute(Constants.MOD_ID);
-            if (treeAttribute is null) return;
-            treeAttribute.SetDouble(Constants.STINKINESS, clampedValue);
-            entity.WatchedAttributes.MarkPathDirty(Constants.MOD_ID);
+            entity.SetDoubleAttribute(Constants.STINKINESS_KEY, clampedValue);
         }
     }
 
@@ -150,13 +140,8 @@ internal class EntityBehaviorStinky : EntityBehavior
     /// <param name="attributes"></param>
     public override void Initialize(EntityProperties properties, JsonObject attributes)
     {
-        ITreeAttribute treeAttribute = entity.WatchedAttributes.GetTreeAttribute(Constants.MOD_ID);
-        if (treeAttribute == null)
-        {
-            entity.WatchedAttributes.SetAttribute(Constants.MOD_ID, new TreeAttribute());
-            Stinkiness = 0;
-            lastUpdatedDays = entity.World.Calendar.TotalDays;
-        }
+        Stinkiness = 0;
+        lastUpdatedDays = entity.World.Calendar.TotalDays;
     }
 
     public EntityBehaviorStinky(Entity entity) : base(entity)

@@ -144,10 +144,7 @@ public class StinkParticleSystem
     {
         get
         {
-            Entity playerEntity = capi.World.Player.Entity;
-            ITreeAttribute? treeAttribute = playerEntity.WatchedAttributes.GetTreeAttribute(Constants.MOD_ID);
-            if (treeAttribute is null) return Constants.DEFAULT_STINK_PARTICLE_THRESHOLD;
-            else return treeAttribute.GetDouble(Constants.STINK_PARTICLE_THRESHOLD);
+            return capi.World.Player.Entity.GetDoubleAttribute(Constants.STINK_PARTICLE_THRESHOLD_KEY, Constants.DEFAULT_STINK_PARTICLE_THRESHOLD);
         }
     }
 
@@ -155,10 +152,7 @@ public class StinkParticleSystem
     {
         get
         {
-            Entity playerEntity = capi.World.Player.Entity;
-            ITreeAttribute? treeAttribute = playerEntity.WatchedAttributes.GetTreeAttribute(Constants.MOD_ID);
-            if (treeAttribute is null) return Constants.DEFAULT_FLIES_PARTICLE_THRESHOLD;
-            else return treeAttribute.GetDouble(Constants.FLIES_PARTICLE_THRESHOLD);
+            return capi.World.Player.Entity.GetDoubleAttribute(Constants.FLIES_PARTICLE_THRESHOLD_KEY, Constants.DEFAULT_FLIES_PARTICLE_THRESHOLD);
         }
     }
 
@@ -196,7 +190,7 @@ public class StinkParticleSystem
             entity =>
             {
                 isStinky = entity.GetBehavior<EntityBehaviorStinky>()?.Stinkiness > stinkParticleThreshold;
-                isSoapy = entity.GetBoolAttribute(Constants.SOAPY);
+                isSoapy = entity.GetBoolAttribute(Constants.SOAPY_KEY);
                 return isStinky || isSoapy;
             }
         ))

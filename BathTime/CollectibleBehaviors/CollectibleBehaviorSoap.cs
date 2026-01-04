@@ -88,9 +88,9 @@ public class CollectibleBehaviorSoap(CollectibleObject collObj) : CollectibleBeh
         if (IsSoapable(targetEntity))
         {
             // TODO: replace this logic with a proper buffs system!!!
-            targetEntity.SetBoolAttribute(Constants.SOAPY, true);
-            targetEntity.SetDoubleAttribute(Constants.LAST_SOAP_UPDATE, targetEntity.World.Calendar.TotalHours);
-            targetEntity.SetDoubleAttribute(Constants.SOAP_DURATION, config.SoapDurationHours);
+            targetEntity.SetBoolAttribute(Constants.SOAPY_KEY, true);
+            targetEntity.SetDoubleAttribute(Constants.LAST_SOAP_UPDATE_KEY, targetEntity.World.Calendar.TotalHours);
+            targetEntity.SetDoubleAttribute(Constants.SOAP_DURATION_KEY, config.SoapDurationHours);
 
             slot.TakeOut(1);
             slot.MarkDirty();

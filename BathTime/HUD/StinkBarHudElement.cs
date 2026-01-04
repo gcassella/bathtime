@@ -46,11 +46,8 @@ public class StinkBarHud : HudElement
 
     private void OnGameTick(float dt)
     {
-        if (capi.World.Player.Entity.WatchedAttributes.GetTreeAttribute(Constants.MOD_ID)?.GetDouble(Constants.STINKINESS) is double stinkiness)
-        {
-            stinkBar?.SetLineInterval(0.05f);
-            stinkBar?.SetValues((float)stinkiness, 0.0f, 1.0f);
-        }
+        stinkBar?.SetLineInterval(0.05f);
+        stinkBar?.SetValues((float)capi.World.Player.Entity.GetDoubleAttribute(Constants.STINKINESS_KEY), 0.0f, 1.0f);
     }
 
     public override void OnOwnPlayerDataReceived()

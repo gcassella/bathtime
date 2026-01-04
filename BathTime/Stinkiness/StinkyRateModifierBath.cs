@@ -1,7 +1,6 @@
 using System;
 using Vintagestory.API.Common;
 using Vintagestory.API.Common.Entities;
-using Vintagestory.API.MathTools;
 using Vintagestory.GameContent;
 
 namespace BathTime;
