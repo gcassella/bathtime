@@ -4,7 +4,11 @@
     "path": "/behaviors",
     "value": [
       {
-        "name": "bathtime.soap"
+        "name": "bathtime.soap",
+        "properties": {
+          "CooldownTimeHours": 0.5,
+          "StinkRateReduction": 50
+        }
       }
     ],
     "file": "soaplyeandbloom:itemtypes/resource/soapbar.json"

@@ -39,7 +39,7 @@ public class CollectibleBehaviorPerfume(CollectibleObject collObj) : Collectible
 
     public override void GetHeldItemInfo(ItemSlot inSlot, StringBuilder dsc, IWorldAccessor world, bool withDebugInfo)
     {
-        dsc.AppendLine(Lang.Get("bathtime:perfume-item-info", $"{config.ApplicationTimeSec:F1} secs", $"{config.CooldownTimeHours:F1} hours", $"{config.StinkinessReduction:F1}%"));
+        dsc.AppendLine(Lang.Get("bathtime:perfume-item-info", $"{config.ApplicationTimeSec:F1} sec", $"{config.CooldownTimeHours:F1} hours", $"{100 * config.StinkinessReduction:F1}%"));
     }
 
     public override WorldInteraction[] GetHeldInteractionHelp(ItemSlot inSlot, ref EnumHandling handling)

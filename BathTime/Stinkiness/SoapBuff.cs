@@ -19,7 +19,7 @@ public class SoapBuff : Buff, IStinkyRateModifier
 
     protected override void onGameTick(float dt)
     {
-        // Only tick the soap buff when we're in a bath.
+        // Tick the soap buff at half rate if not bathing.
         if (EntityBehaviorStinky.IsBathing(entity))
         {
             base.onGameTick(dt);
@@ -27,7 +27,12 @@ public class SoapBuff : Buff, IStinkyRateModifier
         else
         {
             var nowHours = entity.Api.World.Calendar.TotalHours;
+            durationHours -= (nowHours - lastUpdated) / 2;
             lastUpdated = nowHours;
+            if (durationHours <= 0)
+            {
+                OnEnd();
+            }
         }
     }
 

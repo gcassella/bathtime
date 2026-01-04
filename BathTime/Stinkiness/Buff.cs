@@ -52,7 +52,7 @@ public class Buff
         }
     }
 
-    private void OnEnd()
+    protected void OnEnd()
     {
         durationHours = 0.0f;
         entity.SetBoolAttribute(identifier, false);
