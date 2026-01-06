@@ -10,7 +10,12 @@
                 }
             }
         ],
-        "file": "soaplyeandbloom:itemtypes/utility/poultice.json"
+        "file": "soaplyeandbloom:itemtypes/utility/poultice.json",
+        "dependsOn": [
+            {
+                "modid": "soaplyeandbloom"
+            }
+        ]
     },
     {
         "op": "addmerge",
@@ -23,6 +28,14 @@
                 }
             }
         ],
-        "file": "soaplyeandbloom:compatibility/wildcraftfruit/itemtypes/soapandlyepoultice.json"
+        "file": "soaplyeandbloom:compatibility/wildcraftfruit/itemtypes/soapandlyepoultice.json",
+        "dependsOn": [
+            {
+                "modid": "soaplyeandbloom"
+            },
+            {
+                "modid": "wildcraftfruit"
+            }
+        ]
     }
 ]

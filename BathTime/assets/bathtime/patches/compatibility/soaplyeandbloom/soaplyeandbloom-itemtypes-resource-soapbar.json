@@ -11,6 +11,11 @@
         }
       }
     ],
-    "file": "soaplyeandbloom:itemtypes/resource/soapbar.json"
+    "file": "soaplyeandbloom:itemtypes/resource/soapbar.json",
+    "dependsOn": [
+      {
+        "modid": "soaplyeandbloom"
+      }
+    ]
   }
 ]
