@@ -209,10 +209,9 @@ public class StinkParticleSystem
         _entityParticleSystem.OnSimTick += OnSimTickGnats;
     }
 
+    private readonly object _attributeLock = new();
     private bool AsyncParticleSpawn(float dt, IAsyncParticleManager manager)
     {
-
-
         // Search for nearby stinky entities
         foreach (var entity in capi.World.GetEntitiesAround(
             capi.World.Player.Entity.Pos.XYZ,
@@ -220,30 +219,46 @@ public class StinkParticleSystem
             100.0f,
             entity =>
             {
-                return entity.GetBehavior<EntityBehaviorStinky>()?.Stinkiness > stinkParticleThreshold
-                || Buff.ActiveOnEntity(entity, Constants.SOAPY_BUFF_KEY)
-                || Buff.ActiveOnEntity(entity, Constants.PERFUME_BUFF_KEY);
+                lock (_attributeLock)
+                {
+                    return entity.GetBehavior<EntityBehaviorStinky>()?.Stinkiness > stinkParticleThreshold
+                    || Buff.ActiveOnEntity(entity, Constants.SOAPY_BUFF_KEY)
+                    || Buff.ActiveOnEntity(entity, Constants.PERFUME_BUFF_KEY);
+                }
             }
         ))
         {
             EntityPos entityPos = entity.Pos;
-            if (Buff.ActiveOnEntity(entity, Constants.SOAPY_BUFF_KEY))
+            bool isSoapy = false;
+            lock (_attributeLock)
+            {
+                isSoapy = Buff.ActiveOnEntity(entity, Constants.SOAPY_BUFF_KEY);
+            }
+            if (isSoapy)
             {
                 soapBubbleParticles.basePos = entityPos.XYZ + particlePosVerticalOffset;
                 manager.Spawn(soapBubbleParticles);
             }
 
-            bool isPerfumed = Buff.ActiveOnEntity(entity, Constants.PERFUME_BUFF_KEY);
+            bool isPerfumed = false;
+            lock (_attributeLock)
+            {
+                isPerfumed = Buff.ActiveOnEntity(entity, Constants.PERFUME_BUFF_KEY);
+            }
             if (isPerfumed)
             {
                 perfumeParticle.basePos = entityPos.XYZ + particlePosVerticalOffset;
                 manager.Spawn(perfumeParticle);
             }
 
-            if (entity.GetBehavior<EntityBehaviorStinky>()?.Stinkiness > stinkParticleThreshold && !isPerfumed)
+            double? stinkiness = 0;
+            lock (_attributeLock)
             {
-                var stinkiness = entity.GetBehavior<EntityBehaviorStinky>()?.Stinkiness;
+                stinkiness = entity.GetBehavior<EntityBehaviorStinky>()?.Stinkiness;
                 if (stinkiness is null) continue;
+            }
+            if (stinkiness > stinkParticleThreshold && !isPerfumed)
+            {
                 // Spawn particles on stinky entities.
                 stinkParticles.basePos = entityPos.XYZ + particlePosVerticalOffset;
                 var normalizedStinkinessAboveThreshold = (stinkiness - stinkParticleThreshold) / (1 - stinkParticleThreshold);
@@ -277,12 +292,15 @@ public class StinkParticleSystem
                 100.0f,
                 entity =>
                 {
-                    return (
-                        entity.HasBehavior<EntityBehaviorStinky>()
-                        && (entity.GetBehavior<EntityBehaviorStinky>()?.Stinkiness) > fliesParticleThreshold
-                        && (double)flyShouldSpawn.nextFloat() < config.spawnChanceFlies
-                        && entityParticleSystem.Count["matinggnats"] < config.maxFlies
-                    );
+                    lock (_attributeLock)
+                    {
+                        return (
+                            entity.HasBehavior<EntityBehaviorStinky>()
+                            && (entity.GetBehavior<EntityBehaviorStinky>()?.Stinkiness) > fliesParticleThreshold
+                            && (double)flyShouldSpawn.nextFloat() < config.spawnChanceFlies
+                            && entityParticleSystem.Count["matinggnats"] < config.maxFlies
+                        );
+                    }
                 }
             ))
             {
