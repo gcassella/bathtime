@@ -4,7 +4,8 @@
     "modid": "bathtime",
     "name": "BathTime",
     "authors": [
-        "Shantari"
+        "Shantari",
+        "berserkus"
     ],
     "description": "Time to take a bath.",
     "version": "1.1.2",
