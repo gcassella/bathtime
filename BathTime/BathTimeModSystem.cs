@@ -6,6 +6,7 @@ using System.Linq;
 using Vintagestory.API.Util;
 using System;
 using Vintagestory.API.Datastructures;
+using Vintagestory.API.Common.Entities;
 
 namespace BathTime;
 
@@ -92,6 +93,27 @@ public class BathTimeModSystem : ModSystem
                         {
                             return TextCommandResult.Error("Set " + valueName + "=" + value + " failed.");
                         }
+                    }
+                )
+            .EndSub()
+            .BeginSub("stinkiness")
+                .RequiresPlayer()
+                .RequiresPrivilege(Privilege.chat)
+                .WithArgs(sapi.ChatCommands.Parsers.Double("stinkiness"))
+                .HandleWith(
+                    args =>
+                    {
+                        Entity entity = args.Caller.Player.Entity;
+                        if (entity.HasBehavior<EntityBehaviorStinky>())
+                        {
+                            EntityBehaviorStinky? stinkyBehavior = entity.GetBehavior<EntityBehaviorStinky>();
+                            if (stinkyBehavior is not null)
+                            {
+                                stinkyBehavior.Stinkiness = (double)args[0];
+                                return TextCommandResult.Success();
+                            }
+                        }
+                        return TextCommandResult.Error("Could not modify stinkiness.");
                     }
                 )
             .EndSub()
