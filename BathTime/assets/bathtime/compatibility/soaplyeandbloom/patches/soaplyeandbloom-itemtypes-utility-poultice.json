@@ -1,14 +1,9 @@
 [
     {
         "op": "addmerge",
-        "path": "/behaviors",
+        "path": "/tags",
         "value": [
-            {
-                "name": "bathtime.perfume",
-                "properties": {
-                    "ApplicationTimeSec": 3
-                }
-            }
+            "perfume"
         ],
         "file": "soaplyeandbloom:itemtypes/utility/poultice.json",
         "dependsOn": [
@@ -19,14 +14,9 @@
     },
     {
         "op": "addmerge",
-        "path": "/behaviors",
+        "path": "/tags",
         "value": [
-            {
-                "name": "bathtime.perfume",
-                "properties": {
-                    "ApplicationTimeSec": 3
-                }
-            }
+            "perfume"
         ],
         "file": "soaplyeandbloom:compatibility/wildcraftfruit/itemtypes/soapandlyepoultice.json",
         "dependsOn": [

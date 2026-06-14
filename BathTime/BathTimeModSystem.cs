@@ -19,6 +19,39 @@ public class BathTimeModSystem : ModSystem
 
     Harmony? harmony;
 
+    private TagSet soapTag = TagSet.Empty;
+    private TagSet perfumeTag = TagSet.Empty;
+
+    private void RegisterToiletries(ICoreAPI api)
+    {
+        api.CollectibleTagRegistry.TryCreateTagSetAndLogIssues(out soapTag, "soap");
+        api.CollectibleTagRegistry.TryCreateTagSetAndLogIssues(out perfumeTag, "perfume");
+
+        if (api.Side == EnumAppSide.Server)
+        {
+            foreach (CollectibleObject collectible in api.World.Collectibles)
+            {
+                if (soapTag.IsFullyContainedIn(collectible.Tags))
+                {
+                    collectible.CollectibleBehaviors = collectible.CollectibleBehaviors.Append(
+                        new CollectibleBehaviorSoap(
+                            collectible
+                        )
+                    );
+                }
+
+                if (perfumeTag.IsFullyContainedIn(collectible.Tags))
+                {
+                    collectible.CollectibleBehaviors = collectible.CollectibleBehaviors.Append(
+                        new CollectibleBehaviorPerfume(
+                            collectible
+                        )
+                    );
+                }
+            }
+        }
+    }
+
     public override void Start(ICoreAPI api)
     {
         if (!Harmony.HasAnyPatches(Mod.Info.ModID))
@@ -36,6 +69,12 @@ public class BathTimeModSystem : ModSystem
         api.RegisterCollectibleBehaviorClass(Constants.MOD_ID + ".towel", typeof(CollectibleBehaviorTowel));
 
         GlobalConstants.IgnoredStackAttributes = GlobalConstants.IgnoredStackAttributes.AddToArray(Constants.TOWEL_WETNESS_KEY);
+    }
+
+    public override void AssetsFinalize(ICoreAPI api)
+    {
+        base.AssetsLoaded(api);
+        RegisterToiletries(api);
     }
 
     private void SyncConfigToPlayer(IPlayer player, BathtimeConfig config)
