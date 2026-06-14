@@ -40,8 +40,6 @@ internal static class Constants
 
     public static string SECONDS_TO_BATHE_KEY = "seconds_to_bathe";
 
-    public static string MIN_BATHING_SPOT_VOLUME_KEY = "minBathingSpotVolume";
-
     public static double DEFAULT_STINK_PARTICLE_THRESHOLD = 0.4375;
 
     public static double DEFAULT_FLIES_PARTICLE_THRESHOLD = 0.90;

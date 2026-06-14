@@ -34,16 +34,7 @@ internal class EntityBehaviorStinky : EntityBehavior
         var pos = entity.Pos.AsBlockPos;
         var inBlock = entity.Api.World.BlockAccessor.GetBlock(pos, BlockLayersAccess.Fluid);
 
-        if (entity.FeetInLiquid && inBlock.BlockMaterial == EnumBlockMaterial.Liquid && inBlock.Code.Path.Contains("water"))
-        {
-            return true;
-        }
-        else if (BlockEntityBehaviorBathingSpot.IsBathingSpotAtPos(entity.Api.World, pos))
-        {
-            return true;
-        }
-
-        return false;
+        return entity.FeetInLiquid && inBlock.Code.Path.Contains("water");
     }
 
     public bool isBathingOverride { get; set; } = false;
@@ -190,9 +181,9 @@ internal class EntityBehaviorStinky : EntityBehavior
         if (!entity.WatchedAttributes.HasAttribute(Constants.MOD_ID))
         {
             entity.WatchedAttributes.SetAttribute(Constants.MOD_ID, new TreeAttribute());
+            Stinkiness = 0;
+            lastUpdatedDays = entity.World.Calendar.TotalDays;
         }
-        Stinkiness = 0;
-        lastUpdatedDays = entity.World.Calendar.TotalDays;
     }
 
     public EntityBehaviorStinky(Entity entity) : base(entity)

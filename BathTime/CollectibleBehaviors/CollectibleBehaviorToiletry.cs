@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Vintagestory.API.Common;
 using Vintagestory.API.Common.Entities;
 using Vintagestory.API.Datastructures;
@@ -34,7 +35,11 @@ public class CollectibleBehaviorToiletry<TModifier, TConfig>(CollectibleObject c
     {
         base.Initialize(properties);
 
-        config = properties.AsObject<TConfig>();
+        if (properties.AsObject<TConfig>() is not TConfig config)
+        {
+            throw new UnreachableException("Tried to initialize toiletry config with invalid properties.");
+        }
+        this.config = config;
     }
 
     public override void OnLoaded(ICoreAPI api)

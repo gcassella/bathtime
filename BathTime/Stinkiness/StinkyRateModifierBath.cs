@@ -104,7 +104,7 @@ public class StinkyRateModifierBath : IStinkyRateModifier
 
                 foreach (ItemSlot towelSlot in towelSlots)
                 {
-                    if (towelSlot.Itemstack.Collectible.GetBehavior<CollectibleBehaviorTowel>() is CollectibleBehaviorTowel towelBehavior)
+                    if (towelSlot.Itemstack?.Collectible.GetBehavior<CollectibleBehaviorTowel>() is CollectibleBehaviorTowel towelBehavior)
                     {
                         towelBehavior.SetWetness(towelSlot, 1.0);
                         towelSlot.MarkDirty();

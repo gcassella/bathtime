@@ -25,8 +25,8 @@ public class CollectibleBehaviorTowel(CollectibleObject collObj) : CollectibleBe
     {
         if (api is null) return 0;
 
-        ItemStack itemstack = itemSlot.Itemstack;
-        if (!(itemstack?.Attributes?[Constants.TOWEL_WETNESS_KEY] is ITreeAttribute treeAttribute))
+        ItemStack? itemstack = itemSlot.Itemstack;
+        if (itemstack?.Attributes?[Constants.TOWEL_WETNESS_KEY] is not ITreeAttribute treeAttribute)
         {
             return 0;
         }
@@ -50,7 +50,9 @@ public class CollectibleBehaviorTowel(CollectibleObject collObj) : CollectibleBe
     {
         if (api is null) return;
 
-        ItemStack itemstack = itemSlot.Itemstack;
+        ItemStack? itemstack = itemSlot.Itemstack;
+        if (itemstack is null) return;
+
         ITreeAttribute treeAttribute = itemstack.Attributes.GetOrAddTreeAttribute(Constants.TOWEL_WETNESS_KEY);
         treeAttribute.SetDouble(Constants.TOWEL_WETNESS_KEY, wetness);
         treeAttribute.SetDouble(Constants.TOWEL_LAST_UPDATED_KEY, api.World.Calendar.TotalHours);

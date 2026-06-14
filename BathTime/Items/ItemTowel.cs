@@ -22,7 +22,7 @@ class ItemTowel : Item
         // Need to get wetness before calling base as slots might be null after.
         double sourceWetness;
         // Check source has towel behavior.
-        if (op.SourceSlot.Itemstack.Collectible.GetCollectibleBehavior<CollectibleBehaviorTowel>(true) is CollectibleBehaviorTowel sourceTowelBehavior)
+        if (op.SourceSlot.Itemstack?.Collectible.GetCollectibleBehavior<CollectibleBehaviorTowel>(true) is CollectibleBehaviorTowel sourceTowelBehavior)
         {
             // NOTE: these calls to GetWetness will sync wetness on client + server.
             sourceWetness = sourceTowelBehavior.GetWetness(op.SourceSlot);

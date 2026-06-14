@@ -29,8 +29,6 @@ public class BathTimeModSystem : ModSystem
 
         api.RegisterEntityBehaviorClass(Constants.MOD_ID + ".stinky", typeof(EntityBehaviorStinky));
 
-        api.RegisterBlockEntityBehaviorClass(Constants.MOD_ID + ".bathingspot", typeof(BlockEntityBehaviorBathingSpot));
-
         api.RegisterItemClass(Constants.MOD_ID + ".towel", typeof(ItemTowel));
 
         api.RegisterCollectibleBehaviorClass(Constants.MOD_ID + ".soap", typeof(CollectibleBehaviorSoap));

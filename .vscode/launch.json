@@ -10,7 +10,7 @@
                 "watch",
                 "--verbose",
                 "--project",
-                "Launcher/Launcher.csproj",
+                "${workspaceFolder}/Launcher/Launcher.csproj",
                 "--addModPath",
                 "${workspaceFolder}/BathTime/bin/Debug/Mods",
                 "-pcreativebuilding",
